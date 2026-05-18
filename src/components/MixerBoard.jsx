@@ -404,6 +404,10 @@ export default function MixerBoard() {
                       if (selectedCh) d({ type: 'UPDATE_SELECTED_PAN', pan: val })
                       else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { pan: val } })
                     }}
+                    onClick={() => {
+                      if (selectedCh) d({ type: 'UPDATE_SELECTED_PAN', pan: 0 })
+                      else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { pan: 0 } })
+                    }}
                   />
                 </div>
               </div>
@@ -439,6 +443,10 @@ export default function MixerBoard() {
                     value={activeVolume} min={0} max={100} label="" size={58}
                     showPointer={false}
                     onChange={handleVolumeChange}
+                    onClick={() => {
+                      if (selectedCh) d({ type: 'UPDATE_CHANNEL', id: selectedCh.id, updates: { volume: 0 } })
+                      else d({ type: 'UPDATE_MASTER', updates: { volume: 0 } })
+                    }}
                   />
                 </div>
               </div>

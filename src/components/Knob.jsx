@@ -30,7 +30,7 @@ function arcPath(r, aDeg, bDeg) {
   return `M ${sx.toFixed(2)} ${sy.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${ex.toFixed(2)} ${ey.toFixed(2)}`
 }
 
-export default function Knob({ value, min = 0, max = 100, label, onChange, size = SVG_SIZE, showPointer = true }) {
+export default function Knob({ value, min = 0, max = 100, label, onChange, onClick, size = SVG_SIZE, showPointer = true }) {
   const drag = useRef(null)
 
   const deg   = valueToSvgDeg(value, min, max)
@@ -42,15 +42,19 @@ export default function Knob({ value, min = 0, max = 100, label, onChange, size 
 
   function onPointerDown(e) {
     e.currentTarget.setPointerCapture(e.pointerId)
-    drag.current = { y0: e.clientY, v0: value }
+    drag.current = { y0: e.clientY, v0: value, moved: false }
   }
   function onPointerMove(e) {
     if (!drag.current) return
     const delta = drag.current.y0 - e.clientY
+    if (Math.abs(delta) > 2) drag.current.moved = true
     const next = drag.current.v0 + (delta * (max - min)) / DRAG_PX
     onChange(Math.min(max, Math.max(min, next)))
   }
-  function onPointerUp() { drag.current = null }
+  function onPointerUp() {
+    if (drag.current && !drag.current.moved) onClick?.()
+    drag.current = null
+  }
 
   return (
     <div className="flex flex-col items-center gap-[3px] select-none">
