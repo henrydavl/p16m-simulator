@@ -3,7 +3,7 @@ import { getSourceLevel } from '../audio/audioEngine'
 
 const SEGMENTS = 8
 const LIT   = ['#15803d','#16a34a','#22c55e','#4ade80','#facc15','#fbbf24','#f97316','#ef4444']
-const UNLIT = '#1a1a1a'
+const UNLIT = 'var(--led-unlit)'
 
 export default function LevelMeter({ active, phase = 0, sourceKey }) {
   const [litCount, setLitCount] = useState(0)
