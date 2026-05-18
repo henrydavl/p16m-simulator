@@ -2,7 +2,7 @@ export default function SongSelector({ songs, currentSongId, onSongChange, isLoa
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 8 }}>
       <span style={{
-        color: '#555', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.2em',
+        color: '#555', fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.2em',
         whiteSpace: 'nowrap',
       }}>
         SONG
@@ -19,7 +19,7 @@ export default function SongSelector({ songs, currentSongId, onSongChange, isLoa
             border: '1px solid #2a2a2a',
             borderRadius: 3,
             color: songs.length === 0 ? '#444' : '#888',
-            fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.08em',
+            fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.08em',
             cursor: songs.length === 0 ? 'default' : 'pointer',
             appearance: 'none', WebkitAppearance: 'none',
             outline: 'none',
@@ -41,7 +41,7 @@ export default function SongSelector({ songs, currentSongId, onSongChange, isLoa
 
       {isLoading && (
         <span style={{
-          color: '#5a4000', fontSize: 8, fontFamily: 'monospace',
+          color: '#5a4000', fontSize: 9, fontFamily: 'monospace',
           letterSpacing: '0.15em', whiteSpace: 'nowrap',
         }}>
           · · ·

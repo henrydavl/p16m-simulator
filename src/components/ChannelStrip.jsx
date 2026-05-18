@@ -55,7 +55,7 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
           background: selected ? '#22c55e' : '#0c0c0c',
           boxShadow: selected ? '0 0 5px #22c55e, 0 0 2px #22c55e' : 'none',
         }} />
-        <span style={{ color: '#555', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+        <span style={{ color: '#555', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
           {id}
         </span>
       </button>
@@ -64,7 +64,7 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
       <span
         className="text-center uppercase select-none"
         style={{
-          color: '#5a5a5a', fontSize: 8,
+          color: '#5a5a5a', fontSize: 9,
           fontFamily: 'monospace', letterSpacing: '0.04em',
           lineHeight: '1.2', maxWidth: 50,
           wordBreak: 'break-word', hyphens: 'auto',

@@ -282,8 +282,8 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
         {/* Progress bar */}
         <div style={{ padding: '10px 16px 10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-            <span style={{ color: T.text4, fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.15em' }}>PROGRESS</span>
-            <span style={{ color: T.text3, fontSize: 9, fontFamily: 'monospace' }}>{completedCount} / {totalMilestones}</span>
+            <span style={{ color: T.text4, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.15em' }}>PROGRESS</span>
+            <span style={{ color: T.text3, fontSize: 11, fontFamily: 'monospace' }}>{completedCount} / {totalMilestones}</span>
           </div>
           <div style={{ height: 3, background: T.progressBg, borderRadius: 2 }}>
             <div style={{ height: '100%', width: `${(completedCount / totalMilestones) * 100}%`, background: '#c07018', borderRadius: 2, transition: 'width 0.4s' }} />
@@ -297,7 +297,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
             download="P16M_Training_Guide.pdf"
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
-              color: T.pdfText, fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.12em',
+              color: T.pdfText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em',
               textDecoration: 'none', background: T.pdfBg,
               border: `1px solid ${T.pdfBorder}`, borderRadius: 3, padding: '6px 10px',
             }}
@@ -321,15 +321,15 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                   cursor: 'pointer', textAlign: 'left',
                 }}
               >
-                <span style={{ width: 14, color: T.text5, fontSize: 9, flexShrink: 0 }}>{expanded ? '▾' : '▸'}</span>
-                <span style={{ flex: 1, color: modDone ? '#c07018' : T.text2, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.08em' }}>
+                <span style={{ width: 14, color: T.text5, fontSize: 11, flexShrink: 0 }}>{expanded ? '▾' : '▸'}</span>
+                <span style={{ flex: 1, color: modDone ? '#c07018' : T.text2, fontSize: 13, fontFamily: 'monospace', letterSpacing: '0.08em' }}>
                   MODULE {mod.id}
                 </span>
-                {modDone && <span style={{ color: '#c07018', fontSize: 10 }}>✓</span>}
+                {modDone && <span style={{ color: '#c07018', fontSize: 11 }}>✓</span>}
               </button>
               {expanded && (
                 <div style={{ paddingLeft: 38 }}>
-                  <div style={{ color: T.modDescription, fontSize: 9, fontFamily: 'sans-serif', padding: '0 16px 6px 0', lineHeight: 1.4 }}>
+                  <div style={{ color: T.modDescription, fontSize: 11, fontFamily: 'sans-serif', padding: '0 16px 6px 0', lineHeight: 1.4 }}>
                     {mod.title}
                   </div>
                   {mod.milestones.map(ms => {
@@ -354,7 +354,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                         }}>
                           {done && <span style={{ color: '#000', fontSize: 7, lineHeight: 1 }}>✓</span>}
                         </span>
-                        <span style={{ color: done ? '#7a5010' : isActive ? '#f0a030' : T.text3, fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                        <span style={{ color: done ? '#7a5010' : isActive ? '#f0a030' : T.text3, fontSize: 12, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
                           {ms.title}
                         </span>
                       </button>
@@ -369,14 +369,14 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
         {/* Certificate CTA */}
         {allDone && (
           <div style={{ margin: '16px 16px 8px', padding: '12px', background: T.certCtaBg, border: `1px solid ${T.certCtaBorder}`, borderRadius: 4 }}>
-            <div style={{ color: '#c07018', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em', marginBottom: 6 }}>
+            <div style={{ color: '#c07018', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em', marginBottom: 6 }}>
               🎉 TRAINING COMPLETE
             </div>
             <button
               onClick={handleClaimCert}
               style={{
                 width: '100%', padding: '8px 0', background: '#c07018', border: 'none',
-                borderRadius: 3, color: '#000', fontSize: 10, fontFamily: 'monospace',
+                borderRadius: 3, color: '#000', fontSize: 11, fontFamily: 'monospace',
                 letterSpacing: '0.12em', cursor: 'pointer', fontWeight: 700,
               }}
             >
@@ -392,7 +392,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
               onClick={handleReset}
               style={{
                 width: '100%', padding: '7px 0', background: 'transparent', border: `1px solid ${T.resetBorder}`,
-                borderRadius: 3, color: T.resetText, fontSize: 9, fontFamily: 'monospace',
+                borderRadius: 3, color: T.resetText, fontSize: 10, fontFamily: 'monospace',
                 letterSpacing: '0.12em', cursor: 'pointer',
               }}
             >
@@ -431,22 +431,22 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
       <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
         <button
           onClick={goBack}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer', color: T.backText, fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.12em' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer', color: T.backText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em' }}
         >
           ← BACK
         </button>
 
         <div style={{ padding: '0 16px 20px', flex: 1 }}>
-          <div style={{ color: T.text6, fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 6 }}>
+          <div style={{ color: T.text6, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 6 }}>
             MODULE {mod.id} — MILESTONE {ms.id}
           </div>
 
-          <div style={{ color: T.text1, fontSize: 14, fontFamily: 'monospace', letterSpacing: '0.06em', marginBottom: 14, fontWeight: 600 }}>
+          <div style={{ color: T.text1, fontSize: 16, fontFamily: 'monospace', letterSpacing: '0.06em', marginBottom: 14, fontWeight: 600 }}>
             {ms.title}
           </div>
 
           {isQuiz && (
-            <div style={{ color: T.text4, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.6, marginBottom: 16 }}>
+            <div style={{ color: T.text4, fontSize: 12, fontFamily: 'monospace', lineHeight: 1.6, marginBottom: 16 }}>
               {ms.content}
             </div>
           )}
@@ -469,7 +469,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                       borderRadius: 4, padding: 12,
                     }}
                   >
-                    <div style={{ color: T.text2, fontSize: 11, fontFamily: 'sans-serif', lineHeight: 1.5, marginBottom: 10 }}>
+                    <div style={{ color: T.text2, fontSize: 13, fontFamily: 'sans-serif', lineHeight: 1.5, marginBottom: 10 }}>
                       <span style={{ color: '#c07018', fontFamily: 'monospace', fontSize: 9, marginRight: 6 }}>Q{qi + 1}</span>
                       {q.question}
                     </div>
@@ -507,7 +507,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                             onChange={() => setQuizAnswers(prev => ({ ...prev, [qi]: oi }))}
                             style={{ marginTop: 1, accentColor: '#c07018', flexShrink: 0 }}
                           />
-                          <span style={{ color: optColor, fontSize: 11, fontFamily: 'sans-serif', lineHeight: 1.4 }}>
+                          <span style={{ color: optColor, fontSize: 13, fontFamily: 'sans-serif', lineHeight: 1.4 }}>
                             {opt}
                           </span>
                         </label>
@@ -521,10 +521,10 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                         border: `1px solid ${isCorrect ? '#0d200d' : '#280a0a'}`,
                         borderRadius: 3,
                       }}>
-                        <span style={{ color: isCorrect ? '#22c55e' : '#ef4444', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.1em', marginRight: 6 }}>
+                        <span style={{ color: isCorrect ? '#22c55e' : '#ef4444', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginRight: 6 }}>
                           {isCorrect ? '✓ CORRECT' : '✗ INCORRECT'}
                         </span>
-                        <span style={{ color: T.text4, fontSize: 10, fontFamily: 'sans-serif', lineHeight: 1.5 }}>
+                        <span style={{ color: T.text4, fontSize: 12, fontFamily: 'sans-serif', lineHeight: 1.5 }}>
                           {q.explanation}
                         </span>
                       </div>
@@ -542,7 +542,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                     background: allAnswered ? '#1a1200' : T.tryAgainBg,
                     border: `1px solid ${allAnswered ? '#7a4a0a' : T.tryAgainBorder}`,
                     borderRadius: 3, color: allAnswered ? '#c07018' : T.optTextDim,
-                    fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em',
+                    fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.14em',
                     cursor: allAnswered ? 'pointer' : 'default',
                   }}
                 >
@@ -552,7 +552,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
 
               {!done && quizSubmitted && !allCorrect && (
                 <div>
-                  <div style={{ textAlign: 'center', color: '#ef4444', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 10 }}>
+                  <div style={{ textAlign: 'center', color: '#ef4444', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 10 }}>
                     {ms.quiz.filter((q, i) => quizAnswers[i] === q.correct).length} / {ms.quiz.length} correct — review the explanations above
                   </div>
                   <button
@@ -560,7 +560,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                     style={{
                       width: '100%', padding: '10px 0', background: T.tryAgainBg,
                       border: `1px solid ${T.tryAgainBorder}`, borderRadius: 3, color: T.tryAgainText,
-                      fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
+                      fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
                     }}
                   >
                     TRY AGAIN
@@ -570,7 +570,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
 
               {!done && quizSubmitted && allCorrect && (
                 <div>
-                  <div style={{ textAlign: 'center', color: '#22c55e', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 10 }}>
+                  <div style={{ textAlign: 'center', color: '#22c55e', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 10 }}>
                     {ms.quiz.length} / {ms.quiz.length} correct — well done!
                   </div>
                   <button
@@ -587,12 +587,12 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
               )}
 
               {done && (
-                <div style={{ textAlign: 'center', color: T.completedText, fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em', padding: '10px 0' }}>
+                <div style={{ textAlign: 'center', color: T.completedText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em', padding: '10px 0' }}>
                   ✓ COMPLETED
                   {next && (
                     <button
                       onClick={() => openMilestone(next.mId, next.msId)}
-                      style={{ display: 'block', width: '100%', marginTop: 8, padding: '8px 0', background: 'none', border: `1px solid ${T.nextBorder}`, borderRadius: 3, color: T.nextText, fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em', cursor: 'pointer' }}
+                      style={{ display: 'block', width: '100%', marginTop: 8, padding: '8px 0', background: 'none', border: `1px solid ${T.nextBorder}`, borderRadius: 3, color: T.nextText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', cursor: 'pointer' }}
                     >
                       NEXT: {next.title} →
                     </button>
@@ -605,7 +605,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
           {/* ── Plain content milestone ── */}
           {!isQuiz && (
             <>
-              <div style={{ color: T.text7, fontSize: 11, fontFamily: 'sans-serif', lineHeight: 1.7, background: T.contentBg, border: `1px solid ${T.contentBorder}`, borderRadius: 4, padding: 14, marginBottom: 20, whiteSpace: 'pre-line' }}>
+              <div style={{ color: T.text7, fontSize: 13, fontFamily: 'sans-serif', lineHeight: 1.7, background: T.contentBg, border: `1px solid ${T.contentBorder}`, borderRadius: 4, padding: 14, marginBottom: 20, whiteSpace: 'pre-line' }}>
                 {ms.content}
               </div>
 
@@ -615,18 +615,18 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                   style={{
                     width: '100%', padding: '10px 0', background: '#0a1c0a',
                     border: '1px solid #163016', borderRadius: 3, color: '#22c55e',
-                    fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
+                    fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
                   }}
                 >
                   ✓ MARK AS COMPLETE
                 </button>
               ) : (
-                <div style={{ textAlign: 'center', color: T.completedText, fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em', padding: '10px 0' }}>
+                <div style={{ textAlign: 'center', color: T.completedText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em', padding: '10px 0' }}>
                   ✓ COMPLETED
                   {next && (
                     <button
                       onClick={() => openMilestone(next.mId, next.msId)}
-                      style={{ display: 'block', width: '100%', marginTop: 8, padding: '8px 0', background: 'none', border: `1px solid ${T.nextBorder}`, borderRadius: 3, color: T.nextText, fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em', cursor: 'pointer' }}
+                      style={{ display: 'block', width: '100%', marginTop: 8, padding: '8px 0', background: 'none', border: `1px solid ${T.nextBorder}`, borderRadius: 3, color: T.nextText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', cursor: 'pointer' }}
                     >
                       NEXT: {next.title} →
                     </button>
@@ -643,10 +643,10 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
   function renderCertPrompt() {
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 20px' }}>
-        <div style={{ color: '#c07018', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.15em', marginBottom: 20, textAlign: 'center' }}>
+        <div style={{ color: '#c07018', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.15em', marginBottom: 20, textAlign: 'center' }}>
           🎉 TRAINING COMPLETE
         </div>
-        <div style={{ color: T.text7, fontSize: 11, fontFamily: 'monospace', lineHeight: 1.6, marginBottom: 24, textAlign: 'center' }}>
+        <div style={{ color: T.text7, fontSize: 13, fontFamily: 'monospace', lineHeight: 1.6, marginBottom: 24, textAlign: 'center' }}>
           Enter your name as it should appear on your certificate.
         </div>
         <form onSubmit={handleSubmitName}>
@@ -668,7 +668,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
             style={{
               width: '100%', padding: '10px 0', background: nameInput.trim() ? '#c07018' : '#2a1800',
               border: 'none', borderRadius: 3, color: nameInput.trim() ? '#000' : '#4a3000',
-              fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em',
+              fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.14em',
               cursor: nameInput.trim() ? 'pointer' : 'default', fontWeight: 700,
               transition: 'background 150ms',
             }}
@@ -685,7 +685,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px 20px' }}>
         <button
           onClick={() => setView('modules')}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, background: 'none', border: 'none', cursor: 'pointer', color: T.backText, fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.12em' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, background: 'none', border: 'none', cursor: 'pointer', color: T.backText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em' }}
         >
           ← BACK
         </button>
@@ -698,7 +698,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
           style={{
             width: '100%', marginTop: 10, padding: '10px 0',
             background: '#c07018', border: 'none', borderRadius: 3,
-            color: '#000', fontSize: 10, fontFamily: 'monospace',
+            color: '#000', fontSize: 11, fontFamily: 'monospace',
             letterSpacing: '0.14em', cursor: 'pointer', fontWeight: 700,
           }}
         >
@@ -710,7 +710,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
           style={{
             display: 'block', width: '100%', marginTop: 8, padding: '10px 0', boxSizing: 'border-box',
             background: T.pdfBg, border: `1px solid ${T.pdfBorder}`, borderRadius: 3,
-            color: T.pdfText, fontSize: 10, fontFamily: 'monospace',
+            color: T.pdfText, fontSize: 11, fontFamily: 'monospace',
             letterSpacing: '0.14em', textAlign: 'center', textDecoration: 'none',
           }}
         >
@@ -728,13 +728,13 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
       <button
         onClick={onToggle}
         style={{
-          position: 'fixed', top: 16, left: open ? 272 : 0, zIndex: 200,
+          position: 'fixed', top: 16, left: open ? 320 : 0, zIndex: 200,
           height: 32, paddingInline: 10,
           background: T.toggleBg,
           border: `1px solid ${T.toggleBorder}`,
           borderLeft: open ? `1px solid ${T.toggleBorder}` : 'none',
           borderRadius: '0 3px 3px 0',
-          color: T.toggleText, fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.14em',
+          color: T.toggleText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.14em',
           cursor: 'pointer', transition: 'left 0.25s',
           display: 'flex', alignItems: 'center', gap: 5,
         }}
@@ -746,7 +746,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
       <div
         style={{
           position: 'fixed', top: 0, left: 0, bottom: 0,
-          width: 272, zIndex: 190,
+          width: 320, zIndex: 190,
           background: T.panelBg,
           borderRight: `1px solid ${T.panelBorder}`,
           transform: open ? 'translateX(0)' : 'translateX(-100%)',
@@ -757,10 +757,10 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
       >
         {/* Header */}
         <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${T.headerBorder}`, flexShrink: 0 }}>
-          <div style={{ color: '#c07018', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.2em', fontWeight: 700 }}>
+          <div style={{ color: '#c07018', fontSize: 13, fontFamily: 'monospace', letterSpacing: '0.2em', fontWeight: 700 }}>
             P16 TRAINING
           </div>
-          <div style={{ color: T.subtitleText, fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.1em', marginTop: 3 }}>
+          <div style={{ color: T.subtitleText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginTop: 3 }}>
             SELF-LEARNING MODULE
           </div>
         </div>
@@ -786,7 +786,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                   background: 'none', border: 'none',
                   borderBottom: isActive ? '2px solid #c07018' : '2px solid transparent',
                   color: isActive ? '#c07018' : (tab.id === 'certificate' && !allDone) ? T.optTextDim : T.text4,
-                  fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.12em',
+                  fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em',
                   cursor: tab.id === 'certificate' && !allDone ? 'default' : 'pointer',
                 }}
               >
