@@ -1,4 +1,5 @@
 import { useReducer, useState, useEffect, useRef } from 'react'
+import logo from '../assets/logo-with-icon.png'
 import { CHANNELS, INITIAL_CHANNEL_STATE, INITIAL_MASTER_STATE } from '../data/channels'
 import {
   initAudio, stopAudio, setChannelVolume, setChannelActive, setChannelPan, setChannelEQ,
@@ -246,30 +247,29 @@ export default function MixerBoard() {
         {/* ── Silver top bar ─────────────────────────────────────────── */}
         <div
           style={{
-            background: 'linear-gradient(180deg,#d4d4d4 0%,#9e9e9e 55%,#898989 100%)',
-            borderBottom: '1px solid #686868',
-            padding: '9px 20px',
+            background: 'linear-gradient(180deg, #c8c8c8 0%, #bcbcbc 50%, #b4b4b4 100%)',
+            borderBottom: '2px solid #888',
+            padding: '8px 20px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <BehringerMark />
-            <span style={{ color: '#1c1c1c', fontSize: 13, fontWeight: 700, fontFamily: 'sans-serif', letterSpacing: '0.05em' }}>
-              behringer
-            </span>
-          </div>
+          <img
+            src={logo}
+            alt="behringer"
+            style={{ height: 40, mixBlendMode: 'multiply' }}
+          />
           <div style={{ textAlign: 'right', lineHeight: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-              <span style={{ color: '#181818', fontSize: 17, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{ color: '#111', fontSize: 18, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
                 POWERPLAY
               </span>
-              <span style={{ color: '#181818', fontSize: 26, fontWeight: 200, fontFamily: 'sans-serif', lineHeight: 1 }}>
+              <span style={{ color: '#111', fontSize: 34, fontWeight: 100, fontFamily: 'sans-serif', lineHeight: 1 }}>
                 16
               </span>
             </div>
-            <div style={{ color: '#4a4a4a', fontSize: 8, letterSpacing: '0.18em', textTransform: 'uppercase', fontFamily: 'monospace', marginTop: 2 }}>
+            <div style={{ color: '#444', fontSize: 7.5, letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'sans-serif', marginTop: 3, fontWeight: 600 }}>
               16-Channel Digital Personal Mixer&nbsp;&nbsp;P16-M
             </div>
           </div>
@@ -391,7 +391,7 @@ export default function MixerBoard() {
               <div>
                 {/* ULTRANET indicator */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <span style={{ color: '#2e2e2e', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.18em' }}>ULTRANET</span>
+                  <span style={{ color: '#555', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.18em' }}>ULTRANET</span>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#15532e', boxShadow: '0 0 5px #16a34a' }} />
                 </div>
                 <SectionLabel label="PAN/BAL" />
@@ -465,8 +465,8 @@ export default function MixerBoard() {
         <div
           style={{
             height: 14,
-            background: 'linear-gradient(180deg,#888 0%,#aaa 45%,#c4c4c4 100%)',
-            borderTop: '1px solid #686868',
+            background: 'linear-gradient(0deg, #c8c8c8 0%, #bcbcbc 50%, #b4b4b4 100%)',
+            borderTop: '2px solid #888',
           }}
         />
       </div>
@@ -492,11 +492,11 @@ export default function MixerBoard() {
 function SectionLabel({ label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <div style={{ flex: 1, height: 1, background: '#2c2c2c' }} />
-      <span style={{ color: '#484848', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.22em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+      <div style={{ flex: 1, height: 1, background: '#444' }} />
+      <span style={{ color: '#666', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.22em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
         {label}
       </span>
-      <div style={{ flex: 1, height: 1, background: '#2c2c2c' }} />
+      <div style={{ flex: 1, height: 1, background: '#444' }} />
     </div>
   )
 }
@@ -536,27 +536,48 @@ function HwTopBtn({ label, active = false, color = 'neutral', onClick }) {
   )
 }
 
-/** Horizontal LED dot array for PAN/BAL — shows L/R balance */
+/** Circular-arc LED array for PAN/BAL — dots placed on a true circle arc (bowl shape) */
 function PanBalDisplay({ pan, hasSelection }) {
-  // 9 dots; index 4 = centre. Lights from centre to position.
-  const offset = Math.round((pan / 50) * 4) // -4 to +4
+  const N = 9
+  const W = 80, H = 22
+  const CX = W / 2
+  const R = 120           // large radius → subtle arc
+  const HALF_ARC = 17.5  // degrees each side of centre
+  const DOT_R = 3.5
+  // Circle centre is above the SVG so the bottom of the arc is near the bottom of H
+  const CY_CIRC = H - DOT_R - R
+
+  const offset = Math.round((pan / 50) * 4)
   const minIdx = Math.min(4, 4 + offset)
   const maxIdx = Math.max(4, 4 + offset)
+
+  const dots = Array.from({ length: N }, (_, i) => {
+    const deg = 90 + ((i - 4) / 4) * HALF_ARC   // 90° = straight down (SVG)
+    const rad = (deg * Math.PI) / 180
+    return {
+      cx: CX + R * Math.cos(rad),
+      cy: CY_CIRC + R * Math.sin(rad),
+      lit: hasSelection && i >= minIdx && i <= maxIdx,
+      center: i === 4,
+    }
+  })
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
-      <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-        {Array.from({ length: 9 }, (_, i) => {
-          const lit = hasSelection && i >= minIdx && i <= maxIdx
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
+      <svg width={W} height={H}>
+        {dots.map(({ cx, cy, lit, center }, i) => {
+          const col = lit ? (center ? '#22c55e' : '#f59e0b') : '#1a1a1a'
           return (
-            <div key={i} style={{
-              width: 7, height: 7, borderRadius: '50%',
-              background: lit ? '#f59e0b' : '#141414',
-              boxShadow: lit ? '0 0 5px #f59e0b, 0 0 2px #f59e0b' : 'none',
-            }} />
+            <circle
+              key={i}
+              cx={cx.toFixed(1)} cy={cy.toFixed(1)} r={DOT_R}
+              fill={col}
+              style={{ filter: lit ? `drop-shadow(0 0 3px ${center ? '#22c55e' : '#f59e0b'})` : 'none' }}
+            />
           )
         })}
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', paddingInline: 1 }}>
+      </svg>
+      <div style={{ display: 'flex', justifyContent: 'space-between', width: W }}>
         <span style={{ color: '#3a3a3a', fontSize: 7, fontFamily: 'monospace' }}>L</span>
         <span style={{ color: '#3a3a3a', fontSize: 7, fontFamily: 'monospace' }}>R</span>
       </div>
@@ -564,37 +585,37 @@ function PanBalDisplay({ pan, hasSelection }) {
   )
 }
 
-/** Triangular LED display for VOLUME — bars of increasing height */
+/** Triangle outline + diagonal LED dots for VOLUME — matches real P16-M */
 function VolumeTriangle({ volume }) {
-  const litCount = Math.round((volume / 100) * 10)
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3 }}>
-      {Array.from({ length: 10 }, (_, i) => {
-        const h = 5 + Math.round(i * 2.2)
-        const lit = i < litCount
-        const hot = i >= 7
-        return (
-          <div key={i} style={{
-            width: 6, height: h, borderRadius: 1,
-            background: lit ? (hot ? '#ef4444' : '#f59e0b') : '#111',
-            boxShadow: lit ? `0 0 4px ${hot ? '#ef4444' : '#f59e0b'}` : 'none',
-          }} />
-        )
-      })}
-    </div>
-  )
-}
+  const N = 6
+  const W = 64, H = 40
+  const litCount = Math.round((volume / 100) * N)
 
-/** Simplified Behringer "B" logomark in the silver bar */
-function BehringerMark() {
+  // Dots spaced along the hypotenuse: bottom-left → top-right
+  const dots = Array.from({ length: N }, (_, i) => {
+    const t = (i + 0.5) / N
+    return {
+      cx: 4 + t * (W - 8),
+      cy: (H - 6) - t * (H - 10),
+      lit: i < litCount,
+    }
+  })
+
   return (
-    <svg width="18" height="22" viewBox="0 0 18 22" fill="none">
-      <path
-        d="M3 1.5h7c2.2 0 3.5 1.1 3.5 2.9 0 1.3-.7 2.2-1.8 2.7C13.6 7.5 14.8 8.7 14.8 10.6c0 2.2-1.7 3.5-4.5 3.5H3V1.5z
-           M5.4 3.5V6.7h4c1.1 0 1.8-.6 1.8-1.6 0-.9-.7-1.6-1.8-1.6H5.4z
-           M5.4 8.8v3.5H9.7c1.3 0 2.1-.7 2.1-1.8 0-1-.8-1.7-2.1-1.7H5.4z"
-        fill="#2e2e2e"
+    <svg width={W} height={H} style={{ overflow: 'visible' }}>
+      {/* Triangle outline — right-angle at bottom-right */}
+      <polygon
+        points={`4,${H - 4} ${W - 4},${H - 4} ${W - 4},4`}
+        fill="none" stroke="#333" strokeWidth="1.5" strokeLinejoin="round"
       />
+      {/* LED dots along hypotenuse */}
+      {dots.map(({ cx, cy, lit }, i) => (
+        <circle
+          key={i} cx={cx} cy={cy} r={3}
+          fill={lit ? '#f59e0b' : '#1a1a1a'}
+          style={{ filter: lit ? 'drop-shadow(0 0 3px #f59e0b)' : 'none' }}
+        />
+      ))}
     </svg>
   )
 }
