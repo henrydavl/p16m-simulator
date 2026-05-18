@@ -1,70 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  /* backgrounds */
-  --bg-page:    #030712;
-  --bg-outer:   #060606;
-  --bg-panel:   #0f0f0f;
-  --bg-surface: #141414;
-  --bg-inset:   #0d0d0d;
-  /* borders */
-  --bdr-faint:  #1a1a1a;
-  --bdr-subtle: #1e1e1e;
-  --bdr-mid:    #2a2a2a;
-  --bdr-section:#2c2c2c;
-  /* text */
-  --txt-bright: #dddddd;
-  --txt-mid:    #bbbbbb;
-  --txt-dim:    #555555;
-  --txt-muted:  #484848;
-  --txt-faint:  #383838;
-  --txt-ghost:  #2a2a2a;
-  /* knob */
-  --knob-skirt: #1c1c1c;
-  --knob-tick:  #3a3a3a;
-  --knob-track: #111111;
-  --knob-ring:  #1e1e1e;
-  --knob-face:  #2e2e2e;
-  --knob-glow:  #383838;
-  --knob-ptr:   #d8d8d8;
-  --knob-pip:   #1a1a1a;
-  /* misc */
-  --led-unlit:  #1a1a1a;
-  --ch-bg:      #111111;
-  --ch-btn-bg:  #141414;
-  --ch-btn-bdr: #202020;
-  --ch-led-off: #0c0c0c;
+  --bg-page: #030712;
 }
 
 html[data-theme="light"] {
-  --bg-page:    #c8c8c8;
-  --bg-outer:   #d0d0d0;
-  --bg-panel:   #ebebeb;
-  --bg-surface: #dcdcdc;
-  --bg-inset:   #f2f2f2;
-  --bdr-faint:  #cccccc;
-  --bdr-subtle: #c0c0c0;
-  --bdr-mid:    #aaaaaa;
-  --bdr-section:#b8b8b8;
-  --txt-bright: #1a1a1a;
-  --txt-mid:    #333333;
-  --txt-dim:    #666666;
-  --txt-muted:  #777777;
-  --txt-faint:  #888888;
-  --txt-ghost:  #999999;
-  --knob-skirt: #b4b4b4;
-  --knob-tick:  #888888;
-  --knob-track: #c8c8c8;
-  --knob-ring:  #bcbcbc;
-  --knob-face:  #cccccc;
-  --knob-glow:  #dcdcdc;
-  --knob-ptr:   #222222;
-  --knob-pip:   #aaaaaa;
-  --led-unlit:  #c4c4c4;
-  --ch-bg:      #d8d8d8;
-  --ch-btn-bg:  #d0d0d0;
-  --ch-btn-bdr: #b8b8b8;
-  --ch-led-off: #b4b4b4;
+  --bg-page: #e8e8e8;
 }
 
 body {

@@ -36,6 +36,7 @@ export default function Knob({ value, min = 0, max = 100, label, onChange, size 
   const deg   = valueToSvgDeg(value, min, max)
   const fillD = arcPath(ARC_R, TRACK_START, deg)
   const trackD = arcPath(ARC_R, TRACK_START, TRACK_END)
+  // Indicator: short line from near-centre to near-edge (clock-hand style)
   const [i1x, i1y] = svgXY(3.5, deg)
   const [i2x, i2y] = svgXY(KNOB_R - 1.5, deg)
 
@@ -64,7 +65,7 @@ export default function Knob({ value, min = 0, max = 100, label, onChange, size 
         onPointerCancel={onPointerUp}
       >
         {/* Outer skirt ring */}
-        <circle cx={CX} cy={CY} r={22} style={{ fill: 'var(--knob-skirt)' }} />
+        <circle cx={CX} cy={CY} r={22} fill="#1c1c1c" />
         {/* Tick marks at 0%, 25%, 50%, 75%, 100% of arc */}
         {[0, 0.25, 0.5, 0.75, 1].map((t) => {
           const tickDeg = TRACK_START + t * 270
@@ -72,35 +73,35 @@ export default function Knob({ value, min = 0, max = 100, label, onChange, size 
           const [ix, iy] = svgXY(18.5, tickDeg)
           return (
             <line key={t} x1={ox.toFixed(2)} y1={oy.toFixed(2)} x2={ix.toFixed(2)} y2={iy.toFixed(2)}
-              style={{ stroke: 'var(--knob-tick)' }} strokeWidth="1" strokeLinecap="round" />
+              stroke="#3a3a3a" strokeWidth="1" strokeLinecap="round" />
           )
         })}
         {/* Arc track */}
-        <path d={trackD} fill="none" style={{ stroke: 'var(--knob-track)' }} strokeWidth="2.5" strokeLinecap="round" />
+        <path d={trackD} fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" />
         {/* Arc value fill */}
         {fillD && (
           <path d={fillD} fill="none" stroke="#c07018" strokeWidth="2.5" strokeLinecap="round" />
         )}
         {/* Knob body — outer ring for depth */}
-        <circle cx={CX} cy={CY} r={KNOB_R + 1} style={{ fill: 'var(--knob-ring)' }} />
+        <circle cx={CX} cy={CY} r={KNOB_R + 1} fill="#1e1e1e" />
         {/* Knob face */}
-        <circle cx={CX} cy={CY} r={KNOB_R} style={{ fill: 'var(--knob-face)' }} />
+        <circle cx={CX} cy={CY} r={KNOB_R} fill="#2e2e2e" />
         {/* Subtle top-left highlight simulating convex surface */}
-        <circle cx={CX - 3} cy={CY - 3} r={6} style={{ fill: 'var(--knob-glow)' }} opacity="0.5" />
+        <circle cx={CX - 3} cy={CY - 3} r={6} fill="#383838" opacity="0.5" />
         {/* Indicator line */}
         {showPointer && (
           <line
             x1={i1x.toFixed(2)} y1={i1y.toFixed(2)}
             x2={i2x.toFixed(2)} y2={i2y.toFixed(2)}
-            style={{ stroke: 'var(--knob-ptr)' }} strokeWidth="2" strokeLinecap="round"
+            stroke="#d8d8d8" strokeWidth="2" strokeLinecap="round"
           />
         )}
         {/* Centre pip */}
-        <circle cx={CX} cy={CY} r={1.5} style={{ fill: 'var(--knob-pip)' }} />
+        <circle cx={CX} cy={CY} r={1.5} fill="#1a1a1a" />
       </svg>
 
       {label && (
-        <span className="text-[8px] font-mono tracking-[0.12em] uppercase" style={{ color: 'var(--txt-dim)' }}>
+        <span className="text-[8px] font-mono tracking-[0.12em] text-[#5a5a5a] uppercase">
           {label}
         </span>
       )}

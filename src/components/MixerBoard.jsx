@@ -209,7 +209,7 @@ export default function MixerBoard() {
   return (
     <div
       style={{
-        background: 'var(--bg-outer)', minHeight: '100dvh', gap: 14, padding: '12px 8px',
+        background: 'var(--bg-page)', minHeight: '100dvh', gap: 14, padding: '12px 8px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       }}
     >
@@ -217,7 +217,7 @@ export default function MixerBoard() {
       {isPortrait && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 999,
-          background: 'var(--bg-outer)',
+          background: 'var(--bg-page)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 16,
         }}>
@@ -239,7 +239,7 @@ export default function MixerBoard() {
           transformOrigin: 'center center',
           borderRadius: 10,
           overflow: 'hidden',
-          border: '1px solid var(--bdr-mid)',
+          border: '1px solid #2a2a2a',
           boxShadow: '0 24px 64px rgba(0,0,0,0.85), 0 4px 12px rgba(0,0,0,0.6)',
         }}
       >
@@ -276,10 +276,10 @@ export default function MixerBoard() {
         </div>
 
         {/* ── Black main panel ───────────────────────────────────────── */}
-        <div style={{ background: 'var(--bg-panel)', padding: '18px 20px 14px' }}>
+        <div style={{ background: '#0f0f0f', padding: '18px 20px 14px' }}>
 
           {/* ═══ TOP CONTROL SECTION — 3 columns ═══════════════════════ */}
-          <div style={{ display: 'flex', gap: 0, paddingBottom: 16, borderBottom: '1px solid var(--bdr-faint)', marginBottom: 14 }}>
+          <div style={{ display: 'flex', gap: 0, paddingBottom: 16, borderBottom: '1px solid #1a1a1a', marginBottom: 14 }}>
 
             {/* COL 1 — SETUP (visual) + MAIN/SOLO/MUTE */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingRight: 20, minWidth: 196 }}>
@@ -360,7 +360,7 @@ export default function MixerBoard() {
             </div>
 
             {/* Vertical divider */}
-            <div style={{ width: 1, background: 'var(--bdr-subtle)', alignSelf: 'stretch', marginRight: 20 }} />
+            <div style={{ width: 1, background: '#1e1e1e', alignSelf: 'stretch', marginRight: 20 }} />
 
             {/* COL 2 — EQUALIZER + PAN/BAL (inactive when nothing selected) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1, paddingRight: 20, opacity: (selectedCh || state.master.selected) ? 1 : 0.35, pointerEvents: (selectedCh || state.master.selected) ? 'auto' : 'none', transition: 'opacity 150ms' }}>
@@ -391,7 +391,7 @@ export default function MixerBoard() {
               <div>
                 {/* ULTRANET indicator */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <span style={{ color: 'var(--txt-ghost)', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.18em' }}>ULTRANET</span>
+                  <span style={{ color: '#2e2e2e', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.18em' }}>ULTRANET</span>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#15532e', boxShadow: '0 0 5px #16a34a' }} />
                 </div>
                 <SectionLabel label="PAN/BAL" />
@@ -410,7 +410,7 @@ export default function MixerBoard() {
             </div>
 
             {/* Vertical divider */}
-            <div style={{ width: 1, background: 'var(--bdr-subtle)', alignSelf: 'stretch', marginRight: 20 }} />
+            <div style={{ width: 1, background: '#1e1e1e', alignSelf: 'stretch', marginRight: 20 }} />
 
             {/* COL 3 — OUTPUT (functional) + VOLUME (functional) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 196 }}>
@@ -473,11 +473,11 @@ export default function MixerBoard() {
 
       {/* Watermark */}
       <div style={{ textAlign: 'center', userSelect: 'none', lineHeight: 1.8 }}>
-        <div style={{ color: 'var(--txt-dim)', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.18em' }}>
+        <div style={{ color: '#555', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.18em' }}>
           CREATED BY
         </div>
         {['HENRY DAVID LIE', 'KEVIN AWARD ARMELDO'].map((name) => (
-          <div key={name} style={{ color: 'var(--txt-mid)', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em' }}>
+          <div key={name} style={{ color: '#bbb', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em' }}>
             {name}
           </div>
         ))}
@@ -492,11 +492,11 @@ export default function MixerBoard() {
 function SectionLabel({ label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <div style={{ flex: 1, height: 1, background: 'var(--bdr-section)' }} />
-      <span style={{ color: 'var(--txt-muted)', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.22em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+      <div style={{ flex: 1, height: 1, background: '#2c2c2c' }} />
+      <span style={{ color: '#484848', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.22em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
         {label}
       </span>
-      <div style={{ flex: 1, height: 1, background: 'var(--bdr-section)' }} />
+      <div style={{ flex: 1, height: 1, background: '#2c2c2c' }} />
     </div>
   )
 }
@@ -516,9 +516,9 @@ function HwTopBtn({ label, active = false, color = 'neutral', onClick }) {
       className="relative flex items-center justify-center transition-all duration-100 active:scale-[0.97]"
       style={{
         width: 44, height: 36, borderRadius: 3,
-        background: active ? C.bg : 'var(--bg-surface)',
-        border: `1px solid ${active ? C.border : 'var(--bdr-subtle)'}`,
-        color: active ? C.text : 'var(--txt-ghost)',
+        background: active ? C.bg : '#141414',
+        border: `1px solid ${active ? C.border : '#1e1e1e'}`,
+        color: active ? C.text : '#2a2a2a',
         fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.1em', textTransform: 'uppercase',
         boxShadow: active ? `0 0 8px ${C.led}25, inset 0 1px 0 rgba(255,255,255,0.04)` : 'inset 0 1px 0 rgba(255,255,255,0.025)',
         cursor: onClick ? 'pointer' : 'default',
@@ -528,7 +528,7 @@ function HwTopBtn({ label, active = false, color = 'neutral', onClick }) {
       <span style={{
         position: 'absolute', top: 5, left: 5,
         width: 5, height: 5, borderRadius: '50%',
-        background: active ? C.led : 'var(--ch-led-off)',
+        background: active ? C.led : '#0a0a0a',
         boxShadow: active ? `0 0 5px ${C.led}` : 'none',
       }} />
       {label}
@@ -550,15 +550,15 @@ function PanBalDisplay({ pan, hasSelection }) {
           return (
             <div key={i} style={{
               width: 7, height: 7, borderRadius: '50%',
-              background: lit ? '#f59e0b' : 'var(--led-unlit)',
+              background: lit ? '#f59e0b' : '#141414',
               boxShadow: lit ? '0 0 5px #f59e0b, 0 0 2px #f59e0b' : 'none',
             }} />
           )
         })}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', paddingInline: 1 }}>
-        <span style={{ color: 'var(--txt-faint)', fontSize: 7, fontFamily: 'monospace' }}>L</span>
-        <span style={{ color: 'var(--txt-faint)', fontSize: 7, fontFamily: 'monospace' }}>R</span>
+        <span style={{ color: '#3a3a3a', fontSize: 7, fontFamily: 'monospace' }}>L</span>
+        <span style={{ color: '#3a3a3a', fontSize: 7, fontFamily: 'monospace' }}>R</span>
       </div>
     </div>
   )
@@ -576,7 +576,7 @@ function VolumeTriangle({ volume }) {
         return (
           <div key={i} style={{
             width: 6, height: h, borderRadius: 1,
-            background: lit ? (hot ? '#ef4444' : '#f59e0b') : 'var(--led-unlit)',
+            background: lit ? (hot ? '#ef4444' : '#f59e0b') : '#111',
             boxShadow: lit ? `0 0 4px ${hot ? '#ef4444' : '#f59e0b'}` : 'none',
           }} />
         )

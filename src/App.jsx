@@ -9,22 +9,24 @@ export default function App() {
     localStorage.setItem('p16_theme', theme)
   }, [theme])
 
+  const dark = theme === 'dark'
+
   return (
     <>
       <button
-        onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+        onClick={() => setTheme(dark ? 'light' : 'dark')}
         style={{
           position: 'fixed', top: 14, right: 14, zIndex: 300,
           height: 26, paddingInline: 10,
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--bdr-subtle)',
+          background: dark ? '#141414' : '#d0d0d0',
+          border: `1px solid ${dark ? '#2a2a2a' : '#b0b0b0'}`,
           borderRadius: 3,
-          color: 'var(--txt-dim)',
+          color: dark ? '#555' : '#666',
           fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.14em',
           cursor: 'pointer',
         }}
       >
-        {theme === 'dark' ? '◐ LIGHT' : '◑ DARK'}
+        {dark ? '◐ LIGHT' : '◑ DARK'}
       </button>
       <MixerBoard />
     </>

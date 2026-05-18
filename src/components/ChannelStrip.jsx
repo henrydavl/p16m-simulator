@@ -9,7 +9,7 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
   const borderColor = selected ? '#7a4a0a'
     : solo   ? '#4a4000'
     : mute   ? '#3a0a0a'
-    : 'var(--bdr-subtle)'
+    : '#1c1c1c'
 
   const boxShadow = selected
     ? '0 0 8px rgba(192,112,24,0.18), inset 0 0 6px rgba(192,112,24,0.04)'
@@ -24,7 +24,7 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
       className="flex flex-col items-center gap-[5px] pt-[7px] pb-[6px] px-[4px] transition-all duration-150"
       style={{
         width: 58,
-        background: 'var(--ch-bg)',
+        background: '#111',
         border: `1px solid ${borderColor}`,
         borderRadius: 3,
         boxShadow,
@@ -41,8 +41,8 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
         style={{
           width: '100%', height: 30,
           borderRadius: 3,
-          background: selected ? '#0a1c0a' : 'var(--ch-btn-bg)',
-          border: `1px solid ${selected ? '#163016' : 'var(--ch-btn-bdr)'}`,
+          background: selected ? '#0a1c0a' : '#141414',
+          border: `1px solid ${selected ? '#163016' : '#202020'}`,
           boxShadow: selected
             ? '0 0 6px rgba(34,197,94,0.12), inset 0 1px 0 rgba(255,255,255,0.04)'
             : 'inset 0 1px 0 rgba(255,255,255,0.025)',
@@ -52,10 +52,10 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
         <span style={{
           position: 'absolute', top: 5, left: 5,
           width: 5, height: 5, borderRadius: '50%',
-          background: selected ? '#22c55e' : 'var(--ch-led-off)',
+          background: selected ? '#22c55e' : '#0c0c0c',
           boxShadow: selected ? '0 0 5px #22c55e, 0 0 2px #22c55e' : 'none',
         }} />
-        <span style={{ color: 'var(--txt-dim)', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+        <span style={{ color: '#555', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
           {id}
         </span>
       </button>
@@ -64,7 +64,7 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
       <span
         className="text-center uppercase select-none"
         style={{
-          color: 'var(--txt-muted)', fontSize: 8,
+          color: '#5a5a5a', fontSize: 8,
           fontFamily: 'monospace', letterSpacing: '0.04em',
           lineHeight: '1.2', maxWidth: 50,
           wordBreak: 'break-word', hyphens: 'auto',
