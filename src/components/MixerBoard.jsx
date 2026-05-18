@@ -596,37 +596,31 @@ function PanBalDisplay({ pan, hasSelection }) {
   )
 }
 
-/** Triangle outline + diagonal LED dots for VOLUME — matches real P16-M */
+/** Diagonal LED dot row for VOLUME */
 function VolumeTriangle({ volume }) {
   const N = 8
-  const W = 64, H = 40
+  const STEP_X = 7   // horizontal gap between dot centres
+  const STEP_Y = 4   // vertical rise per step
+  const DOT_R = 2.5
+  const PAD = DOT_R + 1
+  const W = PAD * 2 + (N - 1) * STEP_X
+  const H = PAD * 2 + (N - 1) * STEP_Y
   const litCount = Math.round((volume / 100) * N)
 
-  // Dots spaced along the hypotenuse: bottom-left → top-right
-  const dots = Array.from({ length: N }, (_, i) => {
-    const t = (i + 0.5) / N
-    return {
-      cx: 4 + t * (W - 8),
-      cy: (H - 6) - t * (H - 10),
-      lit: i < litCount,
-    }
-  })
-
   return (
-    <svg width={W} height={H} style={{ overflow: 'visible' }}>
-      {/* Triangle outline — right-angle at bottom-right */}
-      <polygon
-        points={`4,${H - 4} ${W - 4},${H - 4} ${W - 4},4`}
-        fill="none" stroke="#333" strokeWidth="1.5" strokeLinejoin="round"
-      />
-      {/* LED dots along hypotenuse */}
-      {dots.map(({ cx, cy, lit }, i) => (
-        <circle
-          key={i} cx={cx} cy={cy} r={3}
-          fill={lit ? '#ef4444' : '#1a1a1a'}
-          style={{ filter: lit ? 'drop-shadow(0 0 3px #ef4444)' : 'none' }}
-        />
-      ))}
+    <svg width={W} height={H}>
+      {Array.from({ length: N }, (_, i) => {
+        const cx = PAD + i * STEP_X
+        const cy = H - PAD - i * STEP_Y
+        const lit = i < litCount
+        return (
+          <circle
+            key={i} cx={cx} cy={cy} r={DOT_R}
+            fill={lit ? '#ef4444' : '#1a1a1a'}
+            style={{ filter: lit ? 'drop-shadow(0 0 3px #ef4444)' : 'none' }}
+          />
+        )
+      })}
     </svg>
   )
 }
