@@ -79,7 +79,7 @@ async function decodeFile(url) {
   return ctx.decodeAudioData(buf)
 }
 
-export async function initAudio() {
+export async function initAudio(onProgress) {
   if (ctx) return
 
   ctx = new (window.AudioContext || window.webkitAudioContext)()
@@ -103,11 +103,15 @@ export async function initAudio() {
 
   for (let id = 1; id <= 16; id++) buildChannelChain(id)
 
-  // Decode all available files in parallel
+  // Decode all available files in parallel, reporting progress as each one finishes
+  const total = Object.keys(AUDIO_URLS).length
+  let done = 0
   const buffers = {}
   await Promise.all(
     Object.entries(AUDIO_URLS).map(async ([name, url]) => {
       buffers[name] = await decodeFile(url)
+      done++
+      onProgress?.(done, total)
     })
   )
 

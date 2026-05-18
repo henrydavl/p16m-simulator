@@ -92,6 +92,7 @@ function reducer(state, action) {
 export default function MixerBoard() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [audioStatus, setAudioStatus] = useState('idle') // 'idle' | 'loading' | 'playing'
+  const [loadProgress, setLoadProgress] = useState({ done: 0, total: 0 })
 
   const anySolo = state.channels.some((ch) => ch.solo)
   const anyMute = state.channels.some((ch) => ch.mute)
@@ -121,8 +122,9 @@ export default function MixerBoard() {
 
   async function handleStartAudio() {
     setAudioStatus('loading')
+    setLoadProgress({ done: 0, total: 0 })
     try {
-      await initAudio()
+      await initAudio((done, total) => setLoadProgress({ done, total }))
       setAudioStatus('playing')
     } catch (err) {
       console.error('Audio init failed:', err)
@@ -146,8 +148,8 @@ export default function MixerBoard() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center"
-      style={{ background: '#060606', padding: '24px 16px' }}
+      className="min-h-screen flex flex-col items-center justify-center"
+      style={{ background: '#060606', padding: '24px 16px', gap: 14 }}
     >
       {/* ── Device shell ───────────────────────────────────────────────── */}
       <div
@@ -255,7 +257,11 @@ export default function MixerBoard() {
                       background: audioStatus === 'loading' ? '#5a4000' : '#f59e0b44',
                       boxShadow: audioStatus === 'loading' ? 'none' : '0 0 3px #f59e0b66',
                     }} />
-                    {audioStatus === 'loading' ? 'LOADING' : '▶ START'}
+                    {audioStatus === 'loading'
+                      ? loadProgress.total > 0
+                        ? `${loadProgress.done} / ${loadProgress.total}`
+                        : '· · ·'
+                      : '▶ START'}
                   </button>
                 )}
               </div>
@@ -365,6 +371,18 @@ export default function MixerBoard() {
             borderTop: '1px solid #686868',
           }}
         />
+      </div>
+
+      {/* Watermark */}
+      <div style={{ textAlign: 'center', userSelect: 'none', lineHeight: 1.8 }}>
+        <div style={{ color: '#555', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.18em' }}>
+          CREATED BY
+        </div>
+        {['HENRY DAVID LIE'].map((name) => (
+          <div key={name} style={{ color: '#bbb', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em' }}>
+            {name}
+          </div>
+        ))}
       </div>
     </div>
   )
