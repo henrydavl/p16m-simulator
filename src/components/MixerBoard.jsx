@@ -608,7 +608,13 @@ function VolumeTriangle({ volume }) {
   const litCount = Math.round((volume / 100) * N)
 
   return (
-    <svg width={W} height={H}>
+    <svg width={W} height={H} style={{ overflow: 'visible' }}>
+      {/* Triangle outline — right-angle at bottom-right */}
+      <polygon
+        points={`${PAD},${H - PAD} ${W - PAD},${H - PAD} ${W - PAD},${PAD}`}
+        fill="none" stroke="#333" strokeWidth="1.5" strokeLinejoin="round"
+      />
+      {/* LED dots in a free diagonal line — not clipped to triangle */}
       {Array.from({ length: N }, (_, i) => {
         const cx = PAD + i * STEP_X
         const cy = H - PAD - i * STEP_Y
