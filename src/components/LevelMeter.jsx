@@ -26,8 +26,7 @@ export default function LevelMeter({ active, phase = 0, sourceKey }) {
       }
       rafRef.current = requestAnimationFrame(tick)
     } else {
-      // Fake sine for channels without audio (shouldn't reach here since active
-      // is gated on AUDIO_CHANNEL_IDS, but kept as a fallback)
+      // Fake sine fallback for active channels with no sourceKey
       function tick(ts) {
         const t = ts / 1000
         const raw =

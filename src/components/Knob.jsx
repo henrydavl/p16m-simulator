@@ -105,7 +105,7 @@ export default function Knob({ value, min = 0, max = 100, label, onChange, onCli
       </svg>
 
       {label && (
-        <span className="text-[8px] font-mono tracking-[0.12em] text-[#5a5a5a] uppercase">
+        <span className="text-[9px] font-mono tracking-[0.12em] text-[#5a5a5a] uppercase">
           {label}
         </span>
       )}

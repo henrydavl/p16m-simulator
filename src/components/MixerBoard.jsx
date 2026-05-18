@@ -1,14 +1,13 @@
-import { useReducer, useState, useEffect, useRef } from 'react'
+import { useReducer, useEffect, useRef, useState } from 'react'
 import logo from '../assets/logo-with-icon.png'
 import { CHANNELS, INITIAL_CHANNEL_STATE, INITIAL_MASTER_STATE } from '../data/channels'
 import {
-  initAudio, stopAudio, setChannelVolume, setChannelActive, setChannelPan, setChannelEQ,
+  setChannelVolume, setChannelActive, setChannelPan, setChannelEQ,
   setMasterVolume, setMasterEQ, setMasterPan, setLimiterThreshold, setOutputLevel,
-  AUDIO_CHANNEL_IDS,
-  CHANNEL_SOURCE_MAP,
 } from '../audio/audioEngine'
 import Knob from './Knob'
 import ChannelStrip from './ChannelStrip'
+import SongSelector from './SongSelector'
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
@@ -130,10 +129,20 @@ function zoneHL(zone, activeZone) {
   }
 }
 
-export default function MixerBoard({ highlightZone = null }) {
+export default function MixerBoard({
+  highlightZone = null,
+  songs = [],
+  currentSongId = null,
+  isFetchingManifest = false,
+  isLoadingSong = false,
+  loadProgress = { done: 0, total: 0 },
+  onSongChange,
+  onPlay,
+  onStop,
+  activeChannelIds = new Set(),
+  songError = null,
+}) {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const [audioStatus, setAudioStatus] = useState('idle') // 'idle' | 'loading' | 'playing'
-  const [loadProgress, setLoadProgress] = useState({ done: 0, total: 0 })
   const [scale, setScale] = useState(1)
   const [isPortrait, setIsPortrait] = useState(false)
   const mixerRef = useRef(null)
@@ -160,7 +169,7 @@ export default function MixerBoard({ highlightZone = null }) {
 
   const anySolo = state.channels.some((ch) => ch.solo)
   const anyMute = state.channels.some((ch) => ch.mute)
-  const isActive = (ch) => audioStatus === 'playing' && AUDIO_CHANNEL_IDS.has(ch.id) && !ch.mute && (!anySolo || ch.solo)
+  const isActive = (ch) => activeChannelIds.has(ch.id) && !ch.mute && (!anySolo || ch.solo)
 
   const selectedCh = state.channels.find((ch) => ch.selected)
   const selectedPair = state.channels.filter((ch) => ch.selected)
@@ -197,20 +206,8 @@ export default function MixerBoard({ highlightZone = null }) {
 
   const d = (action) => dispatch(action)
 
-  async function handleStartAudio() {
-    setAudioStatus('loading')
-    setLoadProgress({ done: 0, total: 0 })
-    try {
-      await initAudio((done, total) => setLoadProgress({ done, total }))
-      setAudioStatus('playing')
-    } catch (err) {
-      console.error('Audio init failed:', err)
-      setAudioStatus('idle')
-    }
-  }
-
   useEffect(() => {
-    if (audioStatus !== 'playing') return
+    if (activeChannelIds.size === 0) return
     const solo = state.channels.some(ch => ch.solo)
     state.channels.forEach(ch => {
       setChannelVolume(ch.id, ch.volume)
@@ -223,7 +220,7 @@ export default function MixerBoard({ highlightZone = null }) {
     setMasterPan(state.master.pan)
     setLimiterThreshold(state.master.limiter)
     setOutputLevel(state.master.outputLevel)
-  }, [state, audioStatus])
+  }, [state, activeChannelIds])
 
   return (
     <div
@@ -250,18 +247,37 @@ export default function MixerBoard({ highlightZone = null }) {
         </div>
       )}
 
-      {/* ── Device shell ───────────────────────────────────────────────── */}
-      <div
-        ref={mixerRef}
-        style={{
-          transform: `scale(${scale})`,
-          transformOrigin: 'center center',
-          borderRadius: 10,
-          overflow: 'visible',
-          border: '1px solid #2a2a2a',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.85), 0 4px 12px rgba(0,0,0,0.6)',
-        }}
-      >
+      {/* ── Song selector + device shell share a column so selector matches mixer width ── */}
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: '100%' }}>
+          <SongSelector
+            songs={songs}
+            currentSongId={currentSongId}
+            onSongChange={onSongChange}
+            isLoading={isFetchingManifest}
+          />
+          {songError && (
+            <div style={{
+              color: '#ef4444', fontSize: 8, fontFamily: 'monospace',
+              letterSpacing: '0.1em', marginBottom: 4,
+            }}>
+              ⚠ {songError}
+            </div>
+          )}
+        </div>
+
+        {/* ── Device shell ─────────────────────────────────────────────── */}
+        <div
+          ref={mixerRef}
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center',
+            borderRadius: 10,
+            overflow: 'visible',
+            border: '1px solid #2a2a2a',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.85), 0 4px 12px rgba(0,0,0,0.6)',
+          }}
+        >
         {/* ── Silver top bar ─────────────────────────────────────────── */}
         <div
           style={{
@@ -316,63 +332,69 @@ export default function MixerBoard({ highlightZone = null }) {
               {/* MAIN / SOLO / MUTE */}
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                 <div>
-                  <div style={{ color: '#383838', fontSize: 7, fontFamily: 'monospace', textAlign: 'center', letterSpacing: '0.15em', marginBottom: 4 }}>MAIN</div>
+                  <div style={{ color: '#383838', fontSize: 8, fontFamily: 'monospace', textAlign: 'center', letterSpacing: '0.15em', marginBottom: 4 }}>MAIN</div>
                   <HwTopBtn label="MAIN" active={state.master.selected} color="amber"
                             onClick={() => d({ type: 'SELECT_MAIN' })} />
                 </div>
                 <div>
-                  <div style={{ color: '#383838', fontSize: 7, fontFamily: 'monospace', textAlign: 'center', letterSpacing: '0.15em', marginBottom: 4 }}>SOLO</div>
+                  <div style={{ color: '#383838', fontSize: 8, fontFamily: 'monospace', textAlign: 'center', letterSpacing: '0.15em', marginBottom: 4 }}>SOLO</div>
                   <HwTopBtn label="SOLO" active={selectedCh?.solo ?? false} color="yellow"
                             onClick={() => d({ type: 'TOGGLE_SELECTED_SOLO' })} />
                 </div>
                 <div>
-                  <div style={{ color: '#383838', fontSize: 7, fontFamily: 'monospace', textAlign: 'center', letterSpacing: '0.15em', marginBottom: 4 }}>MUTE</div>
+                  <div style={{ color: '#383838', fontSize: 8, fontFamily: 'monospace', textAlign: 'center', letterSpacing: '0.15em', marginBottom: 4 }}>MUTE</div>
                   <HwTopBtn label="MUTE" active={selectedCh?.mute ?? false} color="red"
                             onClick={() => d({ type: 'TOGGLE_SELECTED_MUTE' })} />
                 </div>
               </div>
 
-              {/* Audio transport */}
+              {/* Transport */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                {audioStatus === 'playing' ? (
-                  <button
-                    type="button"
-                    onClick={async () => { await stopAudio(); setAudioStatus('idle') }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      height: 22, paddingInline: 10, borderRadius: 3,
-                      background: '#0a1c0a', border: '1px solid #163016',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px #22c55e' }} />
-                    <span style={{ color: '#2e4a2e', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.12em' }}>■ STOP</span>
-                  </button>
+                {activeChannelIds.size > 0 && !isLoadingSong ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, height: 22 }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px #22c55e' }} />
+                      <span style={{ color: '#2e4a2e', fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.12em' }}>PLAYING</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onStop}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        height: 22, paddingInline: 10, borderRadius: 3,
+                        background: '#1c0000', border: '1px solid #3a0000',
+                        color: '#ef4444', fontSize: 9, fontFamily: 'monospace',
+                        letterSpacing: '0.12em', cursor: 'pointer',
+                      }}
+                    >
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#ef444444', boxShadow: '0 0 3px #ef444466' }} />
+                      ■ STOP
+                    </button>
+                  </div>
                 ) : (
                   <button
                     type="button"
-                    onClick={handleStartAudio}
-                    disabled={audioStatus === 'loading'}
+                    disabled={!currentSongId || isLoadingSong || isFetchingManifest}
+                    onClick={onPlay}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 5,
                       height: 22, paddingInline: 10, borderRadius: 3,
-                      background: '#1c1200',
-                      border: '1px solid #3a2800',
-                      color: audioStatus === 'loading' ? '#5a4000' : '#f59e0b',
-                      fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.12em',
-                      cursor: audioStatus === 'loading' ? 'default' : 'pointer',
+                      background: '#1c1200', border: '1px solid #3a2800',
+                      color: (!currentSongId || isLoadingSong || isFetchingManifest) ? '#3a2800' : '#f59e0b',
+                      fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.12em',
+                      cursor: (!currentSongId || isLoadingSong || isFetchingManifest) ? 'default' : 'pointer',
                     }}
                   >
                     <span style={{
                       width: 5, height: 5, borderRadius: '50%',
-                      background: audioStatus === 'loading' ? '#5a4000' : '#f59e0b44',
-                      boxShadow: audioStatus === 'loading' ? 'none' : '0 0 3px #f59e0b66',
+                      background: isLoadingSong ? '#5a4000' : (!currentSongId || isFetchingManifest) ? '#3a2800' : '#f59e0b44',
+                      boxShadow: isLoadingSong ? 'none' : (!currentSongId || isFetchingManifest) ? 'none' : '0 0 3px #f59e0b66',
                     }} />
-                    {audioStatus === 'loading'
+                    {isLoadingSong
                       ? loadProgress.total > 0
                         ? `${loadProgress.done} / ${loadProgress.total}`
                         : '· · ·'
-                      : '▶ START'}
+                      : '▶ PLAY'}
                   </button>
                 )}
               </div>
@@ -411,7 +433,7 @@ export default function MixerBoard({ highlightZone = null }) {
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   {/* Left col — ULTRANET, centred */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                    <span style={{ color: '#555', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.18em' }}>ULTRANET</span>
+                    <span style={{ color: '#555', fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.18em' }}>ULTRANET</span>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#15532e', boxShadow: '0 0 5px #16a34a' }} />
                   </div>
                   {/* Right col — label + arc + knob */}
@@ -488,7 +510,7 @@ export default function MixerBoard({ highlightZone = null }) {
                   channel={{ id: ch.id, label: ch.label, type: ch.type }}
                   state={{ mute: ch.mute, solo: ch.solo, selected: ch.selected }}
                   isActive={isActive(ch)}
-                  sourceKey={CHANNEL_SOURCE_MAP[ch.id]}
+                  sourceKey={ch.trackKey}
                   onSelect={() => d({ type: 'SELECT_CHANNEL', id: ch.id })}
                 />
               ))}
@@ -505,6 +527,7 @@ export default function MixerBoard({ highlightZone = null }) {
             borderRadius: '0 0 9px 9px',
           }}
         />
+        </div>
       </div>
 
       {/* Watermark */}
@@ -529,7 +552,7 @@ function SectionLabel({ label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
       <div style={{ flex: 1, height: 1, background: '#444' }} />
-      <span style={{ color: '#666', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.22em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+      <span style={{ color: '#666', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.22em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
         {label}
       </span>
       <div style={{ flex: 1, height: 1, background: '#444' }} />
@@ -555,7 +578,7 @@ function HwTopBtn({ label, active = false, color = 'neutral', onClick }) {
         background: active ? C.bg : '#141414',
         border: `1px solid ${active ? C.border : '#1e1e1e'}`,
         color: active ? C.text : '#2a2a2a',
-        fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.1em', textTransform: 'uppercase',
+        fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.1em', textTransform: 'uppercase',
         boxShadow: active ? `0 0 8px ${C.led}25, inset 0 1px 0 rgba(255,255,255,0.04)` : 'inset 0 1px 0 rgba(255,255,255,0.025)',
         cursor: onClick ? 'pointer' : 'default',
       }}
