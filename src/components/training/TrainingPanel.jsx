@@ -149,6 +149,8 @@ export default function TrainingPanel({ open, onToggle }) {
   const [activeMilestone, setActiveMilestone] = useState(null)
   const [expandedModules, setExpandedModules] = useState({ 1: true })
   const [nameInput, setNameInput] = useState('')
+  const [quizAnswers, setQuizAnswers] = useState({})
+  const [quizSubmitted, setQuizSubmitted] = useState(false)
   const canvasRef = useRef(null)
 
   const { progress, userName } = stored
@@ -174,6 +176,8 @@ export default function TrainingPanel({ open, onToggle }) {
   function openMilestone(mId, msId) {
     setActiveModule(mId)
     setActiveMilestone(msId)
+    setQuizAnswers({})
+    setQuizSubmitted(false)
     setView('milestone')
   }
 
@@ -312,10 +316,27 @@ export default function TrainingPanel({ open, onToggle }) {
     if (!mod || !ms) return null
     const done = isDone(mod.id, ms.id)
 
-    // Find next milestone
     const allMilestones = MODULES.flatMap(m => m.milestones.map(ms => ({ mId: m.id, msId: ms.id, title: ms.title })))
     const currentIdx = allMilestones.findIndex(x => x.mId === activeModule && x.msId === activeMilestone)
     const next = allMilestones[currentIdx + 1]
+
+    const isQuiz = Array.isArray(ms.quiz)
+    const allAnswered = isQuiz && ms.quiz.every((_, i) => quizAnswers[i] !== undefined)
+    const allCorrect = isQuiz && ms.quiz.every((q, i) => quizAnswers[i] === q.correct)
+
+    function handleCheckAnswers() {
+      setQuizSubmitted(true)
+    }
+
+    function handleTryAgain() {
+      setQuizSubmitted(false)
+    }
+
+    function handleCompleteAndAdvance() {
+      markComplete(mod.id, ms.id)
+      if (next) openMilestone(next.mId, next.msId)
+      else setView('modules')
+    }
 
     return (
       <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
@@ -338,40 +359,198 @@ export default function TrainingPanel({ open, onToggle }) {
             {ms.title}
           </div>
 
-          {/* Content */}
-          <div style={{ color: '#666', fontSize: 11, fontFamily: 'sans-serif', lineHeight: 1.7, background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: 4, padding: 14, marginBottom: 20 }}>
+          {/* Intro text (quiz milestone has a short content string) */}
+          <div style={{ color: '#555', fontSize: 10, fontFamily: 'monospace', lineHeight: 1.6, marginBottom: isQuiz ? 16 : 20 }}>
             {ms.content}
           </div>
 
-          {/* Complete button */}
-          {!done ? (
-            <button
-              onClick={() => {
-                markComplete(mod.id, ms.id)
-                if (next) openMilestone(next.mId, next.msId)
-                else setView('modules')
-              }}
-              style={{
-                width: '100%', padding: '10px 0', background: '#0a1c0a',
-                border: '1px solid #163016', borderRadius: 3, color: '#22c55e',
-                fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em',
-                cursor: 'pointer',
-              }}
-            >
-              ✓ MARK AS COMPLETE
-            </button>
-          ) : (
-            <div style={{ textAlign: 'center', color: '#3a6a3a', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em', padding: '10px 0' }}>
-              ✓ COMPLETED
-              {next && (
+          {/* ── Quiz UI ── */}
+          {isQuiz && (
+            <div>
+              {ms.quiz.map((q, qi) => {
+                const chosen = quizAnswers[qi]
+                const correct = q.correct
+                const isCorrect = chosen === correct
+                const showResult = quizSubmitted && chosen !== undefined
+
+                return (
+                  <div
+                    key={qi}
+                    style={{
+                      marginBottom: 16, background: '#0d0d0d',
+                      border: `1px solid ${showResult ? (isCorrect ? '#163016' : '#3a0a0a') : '#1a1a1a'}`,
+                      borderRadius: 4, padding: 12,
+                    }}
+                  >
+                    {/* Question */}
+                    <div style={{ color: '#bbb', fontSize: 11, fontFamily: 'sans-serif', lineHeight: 1.5, marginBottom: 10 }}>
+                      <span style={{ color: '#c07018', fontFamily: 'monospace', fontSize: 9, marginRight: 6 }}>Q{qi + 1}</span>
+                      {q.question}
+                    </div>
+
+                    {/* Options */}
+                    {q.options.map((opt, oi) => {
+                      const isSelected = chosen === oi
+                      const isCorrectOpt = oi === correct
+                      let optColor = '#555'
+                      let optBg = 'transparent'
+                      let optBorder = '#2a2a2a'
+                      if (showResult) {
+                        if (isCorrectOpt) { optColor = '#22c55e'; optBorder = '#163016'; optBg = '#0a1c0a' }
+                        else if (isSelected && !isCorrectOpt) { optColor = '#ef4444'; optBorder = '#3a0a0a'; optBg = '#1a0505' }
+                        else { optColor = '#2a2a2a' }
+                      } else if (isSelected) {
+                        optColor = '#f0a030'; optBorder = '#7a4a0a'; optBg = '#1a1200'
+                      }
+
+                      return (
+                        <label
+                          key={oi}
+                          style={{
+                            display: 'flex', alignItems: 'flex-start', gap: 8,
+                            padding: '7px 10px', marginBottom: 4,
+                            background: optBg, border: `1px solid ${optBorder}`,
+                            borderRadius: 3, cursor: quizSubmitted ? 'default' : 'pointer',
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name={`q${qi}`}
+                            value={oi}
+                            checked={isSelected}
+                            disabled={quizSubmitted}
+                            onChange={() => setQuizAnswers(prev => ({ ...prev, [qi]: oi }))}
+                            style={{ marginTop: 1, accentColor: '#c07018', flexShrink: 0 }}
+                          />
+                          <span style={{ color: optColor, fontSize: 11, fontFamily: 'sans-serif', lineHeight: 1.4 }}>
+                            {opt}
+                          </span>
+                        </label>
+                      )
+                    })}
+
+                    {/* Per-question explanation */}
+                    {showResult && (
+                      <div style={{
+                        marginTop: 8, padding: '8px 10px',
+                        background: isCorrect ? '#050f05' : '#140505',
+                        border: `1px solid ${isCorrect ? '#0d200d' : '#280a0a'}`,
+                        borderRadius: 3,
+                      }}>
+                        <span style={{ color: isCorrect ? '#22c55e' : '#ef4444', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.1em', marginRight: 6 }}>
+                          {isCorrect ? '✓ CORRECT' : '✗ INCORRECT'}
+                        </span>
+                        <span style={{ color: '#555', fontSize: 10, fontFamily: 'sans-serif', lineHeight: 1.5 }}>
+                          {q.explanation}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Quiz action buttons */}
+              {!done && !quizSubmitted && (
                 <button
-                  onClick={() => openMilestone(next.mId, next.msId)}
-                  style={{ display: 'block', width: '100%', marginTop: 8, padding: '8px 0', background: 'none', border: '1px solid #2a2a2a', borderRadius: 3, color: '#555', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em', cursor: 'pointer' }}
+                  onClick={handleCheckAnswers}
+                  disabled={!allAnswered}
+                  style={{
+                    width: '100%', padding: '10px 0',
+                    background: allAnswered ? '#1a1200' : '#111',
+                    border: `1px solid ${allAnswered ? '#7a4a0a' : '#1e1e1e'}`,
+                    borderRadius: 3, color: allAnswered ? '#c07018' : '#2a2a2a',
+                    fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em',
+                    cursor: allAnswered ? 'pointer' : 'default',
+                  }}
                 >
-                  NEXT: {next.title} →
+                  CHECK ANSWERS
                 </button>
               )}
+
+              {!done && quizSubmitted && !allCorrect && (
+                <div>
+                  <div style={{ textAlign: 'center', color: '#ef4444', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 10 }}>
+                    {ms.quiz.filter((q, i) => quizAnswers[i] === q.correct).length} / {ms.quiz.length} correct — review the explanations above
+                  </div>
+                  <button
+                    onClick={handleTryAgain}
+                    style={{
+                      width: '100%', padding: '10px 0', background: '#0d0d0d',
+                      border: '1px solid #2a2a2a', borderRadius: 3, color: '#555',
+                      fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
+                    }}
+                  >
+                    TRY AGAIN
+                  </button>
+                </div>
+              )}
+
+              {!done && quizSubmitted && allCorrect && (
+                <div>
+                  <div style={{ textAlign: 'center', color: '#22c55e', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 10 }}>
+                    {ms.quiz.length} / {ms.quiz.length} correct — well done!
+                  </div>
+                  <button
+                    onClick={handleCompleteAndAdvance}
+                    style={{
+                      width: '100%', padding: '10px 0', background: '#0a1c0a',
+                      border: '1px solid #163016', borderRadius: 3, color: '#22c55e',
+                      fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
+                    }}
+                  >
+                    ✓ MARK AS COMPLETE
+                  </button>
+                </div>
+              )}
+
+              {done && (
+                <div style={{ textAlign: 'center', color: '#3a6a3a', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em', padding: '10px 0' }}>
+                  ✓ COMPLETED
+                  {next && (
+                    <button
+                      onClick={() => openMilestone(next.mId, next.msId)}
+                      style={{ display: 'block', width: '100%', marginTop: 8, padding: '8px 0', background: 'none', border: '1px solid #2a2a2a', borderRadius: 3, color: '#555', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em', cursor: 'pointer' }}
+                    >
+                      NEXT: {next.title} →
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
+          )}
+
+          {/* ── Plain content milestone ── */}
+          {!isQuiz && (
+            <>
+              <div style={{ color: '#666', fontSize: 11, fontFamily: 'sans-serif', lineHeight: 1.7, background: '#0d0d0d', border: '1px solid #1a1a1a', borderRadius: 4, padding: 14, marginBottom: 20, whiteSpace: 'pre-line' }}>
+                {ms.content}
+              </div>
+
+              {!done ? (
+                <button
+                  onClick={handleCompleteAndAdvance}
+                  style={{
+                    width: '100%', padding: '10px 0', background: '#0a1c0a',
+                    border: '1px solid #163016', borderRadius: 3, color: '#22c55e',
+                    fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
+                  }}
+                >
+                  ✓ MARK AS COMPLETE
+                </button>
+              ) : (
+                <div style={{ textAlign: 'center', color: '#3a6a3a', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em', padding: '10px 0' }}>
+                  ✓ COMPLETED
+                  {next && (
+                    <button
+                      onClick={() => openMilestone(next.mId, next.msId)}
+                      style={{ display: 'block', width: '100%', marginTop: 8, padding: '8px 0', background: 'none', border: '1px solid #2a2a2a', borderRadius: 3, color: '#555', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em', cursor: 'pointer' }}
+                    >
+                      NEXT: {next.title} →
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
