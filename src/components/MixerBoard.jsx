@@ -399,6 +399,7 @@ export default function MixerBoard() {
                   <PanBalDisplay pan={displayPan} hasSelection={!!(selectedCh || state.master.selected)} />
                   <Knob
                     value={displayPan} min={-50} max={50} label="" size={56}
+                    showPointer={false} showArc={false}
                     onChange={(v) => {
                       const val = Math.round(v)
                       if (selectedCh) d({ type: 'UPDATE_SELECTED_PAN', pan: val })

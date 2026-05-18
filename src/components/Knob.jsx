@@ -30,7 +30,7 @@ function arcPath(r, aDeg, bDeg) {
   return `M ${sx.toFixed(2)} ${sy.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${ex.toFixed(2)} ${ey.toFixed(2)}`
 }
 
-export default function Knob({ value, min = 0, max = 100, label, onChange, onClick, size = SVG_SIZE, showPointer = true }) {
+export default function Knob({ value, min = 0, max = 100, label, onChange, onClick, size = SVG_SIZE, showPointer = true, showArc = true }) {
   const drag = useRef(null)
 
   const deg   = valueToSvgDeg(value, min, max)
@@ -83,7 +83,7 @@ export default function Knob({ value, min = 0, max = 100, label, onChange, onCli
         {/* Arc track */}
         <path d={trackD} fill="none" stroke="#111" strokeWidth="2.5" strokeLinecap="round" />
         {/* Arc value fill */}
-        {fillD && (
+        {showArc && fillD && (
           <path d={fillD} fill="none" stroke="#c07018" strokeWidth="2.5" strokeLinecap="round" />
         )}
         {/* Knob body — outer ring for depth */}
