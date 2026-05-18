@@ -12,7 +12,13 @@ import ChannelStrip from './ChannelStrip'
 // ─── State ───────────────────────────────────────────────────────────────────
 
 const initialState = {
-  channels: CHANNELS.map((ch) => ({ ...ch, ...INITIAL_CHANNEL_STATE })),
+  channels: CHANNELS.map((ch) => ({
+    ...ch,
+    ...INITIAL_CHANNEL_STATE,
+    // Stereo L channels (odd ids 1,3,5) default hard-left; R channels (even 2,4,6) hard-right.
+    // Without this, both sides of the split sit at centre and collapse to mono.
+    pan: ch.type === 'stereo' ? (ch.id % 2 === 1 ? -50 : 50) : 0,
+  })),
   master: { ...INITIAL_MASTER_STATE },
 }
 
@@ -48,13 +54,28 @@ function reducer(state, action) {
         master: { ...state.master, selected: false },
       }
     }
-    case 'UPDATE_SELECTED_PAN':
+    case 'UPDATE_SELECTED_PAN': {
+      const selectedPair = state.channels.filter(ch => ch.selected)
+      const isStereoPair = selectedPair.length === 2 && selectedPair.every(ch => ch.type === 'stereo')
+      if (isStereoPair) {
+        // action.pan = balance (-50..+50); 0 = natural stereo (L hard-left, R hard-right)
+        const B = action.pan
+        return {
+          ...state,
+          channels: state.channels.map(ch => {
+            if (!ch.selected) return ch
+            const base = ch.id % 2 === 1 ? -50 : 50  // L base=-50, R base=+50
+            return { ...ch, pan: Math.max(Math.min(base + B, 50), -50) }
+          }),
+        }
+      }
       return {
         ...state,
         channels: state.channels.map((ch) =>
           ch.selected ? { ...ch, pan: action.pan } : ch
         ),
       }
+    }
     case 'UPDATE_SELECTED_EQ':
       return {
         ...state,
@@ -122,9 +143,19 @@ export default function MixerBoard() {
   const anyMute = state.channels.some((ch) => ch.mute)
   const isActive = (ch) => audioStatus === 'playing' && AUDIO_CHANNEL_IDS.has(ch.id) && !ch.mute && (!anySolo || ch.solo)
 
-  // For PAN/BAL display: use first selected channel's pan (stereo pairs share selection)
   const selectedCh = state.channels.find((ch) => ch.selected)
-  const displayPan = selectedCh?.pan ?? 0
+  const selectedPair = state.channels.filter((ch) => ch.selected)
+  const isStereoPairSelected = selectedPair.length === 2 && selectedPair.every(ch => ch.type === 'stereo')
+
+  // For a stereo pair, display the BAL value (0 = natural L/R stereo).
+  // Derive it from whichever channel moved away from its default (L base=-50, R base=+50).
+  const displayPan = isStereoPairSelected
+    ? (() => {
+        const L = selectedPair.find(ch => ch.id % 2 === 1)
+        const R = selectedPair.find(ch => ch.id % 2 === 0)
+        return L.pan !== -50 ? L.pan + 50 : R.pan - 50
+      })()
+    : selectedCh?.pan ?? 0
   // Volume knob: follows selected channel; falls back to master when MAIN selected or nothing selected
   const activeVolume = selectedCh ? selectedCh.volume : state.master.volume
   function handleVolumeChange(v) {
@@ -435,7 +466,7 @@ export default function MixerBoard() {
         <div style={{ color: '#555', fontSize: 9, fontFamily: 'monospace', letterSpacing: '0.18em' }}>
           CREATED BY
         </div>
-        {['HENRY DAVID LIE'].map((name) => (
+        {['HENRY DAVID LIE', 'KEVIN AWARD ARMELDO'].map((name) => (
           <div key={name} style={{ color: '#bbb', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em' }}>
             {name}
           </div>

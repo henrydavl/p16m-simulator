@@ -1,4 +1,4 @@
-# P16-M Simulator — Version 1 Handoff
+# P16-M Simulator — Version 1.1 Handoff
 
 **Live URL:** https://p16-simulator.cloud  
 **Repo:** https://github.com/henrydavl/p16m-simulator  
@@ -59,6 +59,10 @@ All mixer state lives in a single `useReducer` inside `MixerBoard`. There is no 
   bass: 50, mid: 50, freq: 50, treble: 50 }
 ```
 
+Stereo pair channels override the default `pan` at initialisation:
+- L channels (ids 1, 3, 5): `pan: -50` (hard left)
+- R channels (ids 2, 4, 6): `pan: +50` (hard right)
+
 ### Master state
 ```js
 { volume: 75, limiter: 100, outputLevel: 75, selected: false }
@@ -71,7 +75,7 @@ All mixer state lives in a single `useReducer` inside `MixerBoard`. There is no 
 | `SELECT_CHANNEL` | Selects channel; stereo pairs (1-2, 3-4, 5-6) always select together |
 | `SELECT_MAIN` | Selects master; deselects all channels |
 | `UPDATE_CHANNEL` | Updates one channel; stereo pairs mirror each other automatically |
-| `UPDATE_SELECTED_PAN` | Sets pan on all currently selected channels |
+| `UPDATE_SELECTED_PAN` | For mono: sets pan directly. For stereo pairs: treats value as balance (0 = natural L/R), computing L and R pans from the offset |
 | `UPDATE_SELECTED_EQ` | Sets EQ on all currently selected channels |
 | `UPDATE_MASTER` | Updates master volume / limiter / output level |
 | `TOGGLE_SELECTED_SOLO` | Toggles solo on all selected channels |
@@ -80,6 +84,14 @@ All mixer state lives in a single `useReducer` inside `MixerBoard`. There is no 
 ### Context-sensitive controls
 The **VOLUME**, **PAN/BAL**, and **EQUALIZER** knobs all act on whichever channel is currently selected — same as the physical hardware. When MAIN is selected, the VOLUME knob controls master volume. When nothing is selected, knobs are inert.
 
+### Stereo pair PAN/BAL behaviour
+When a stereo pair is selected, the PAN knob operates as a **balance** control:
+- Value 0 = natural stereo (L hard-left, R hard-right) — this is the default
+- Positive value: shifts image right (L moves toward centre, R stays at hard-right)
+- Negative value: shifts image left (L stays at hard-left, R moves toward centre)
+- Formula: `L_pan = clamp(-50 + B, -50, 50)`, `R_pan = clamp(50 + B, -50, 50)`
+- The displayed knob value is the derived balance, so it always reads 0 at the natural stereo position. Centering the knob restores full stereo.
+
 ---
 
 ## Audio Engine (`src/audio/audioEngine.js`)
@@ -87,17 +99,18 @@ The **VOLUME**, **PAN/BAL**, and **EQUALIZER** knobs all act on whichever channe
 ### Signal chain (per channel)
 ```
 AudioBufferSourceNode
-  → AnalyserNode          (level metering tap)
-  → [ChannelSplitterNode] (stereo pairs only)
-  → GainNode              (channel volume + mute)
+  → AnalyserNode              (level metering tap)
+  → [MonoMixGainNode]         (mono files only — downmixes stereo MP3s to true mono)
+  → [ChannelSplitterNode]     (stereo pairs only — routes L to ch-odd, R to ch-even)
+  → GainNode                  (channel volume + mute)
   → BiquadFilter (lowshelf, bass 200 Hz)
   → BiquadFilter (peaking, mid 200–8000 Hz log)
   → BiquadFilter (highshelf, treble 4000 Hz)
   → StereoPannerNode
   → masterGain
-  → limiterInputGain      (LIMITER knob)
-  → DynamicsCompressor    (fixed -1 dB threshold, ratio 20:1)
-  → outputGain            (LEVEL knob)
+  → DynamicsCompressor        (LIMITER knob — threshold 0 to -20 dB, ratio 20:1)
+  → postLimiterGain           (cancels DynamicsCompressor automatic makeup gain)
+  → outputGain                (LEVEL knob)
   → AudioContext.destination
 ```
 
@@ -120,8 +133,24 @@ Channels 10 (GTR 2), 11 (VIO), 12 (SAXO), 14 (MD), 15 (CLICK), 16 (ACC) have no 
 ### Synchronisation
 All `AudioBufferSourceNode`s start at the same `AudioContext` timestamp (`currentTime + 0.05s`). They loop indefinitely.
 
-### Limiter design note
-The `DynamicsCompressorNode` has a fixed threshold of -1 dB. The LIMITER knob controls a pre-compressor `GainNode` (`limiterInputGain`). This avoids the Web Audio makeup-gain artefact where lower thresholds produce louder output due to automatic compensation.
+### Limiter design
+The LIMITER knob controls a `DynamicsCompressorNode` (ratio 20:1, attack 3 ms, release 250 ms, knee 0).
+
+- Knob 100 → threshold 0 dB → compressor is transparent, no limiting
+- Knob 0 → threshold −20 dB → aggressive peak limiting
+- Mapping: `threshold_dB = -(100 - value) * 0.2`
+
+Web Audio's `DynamicsCompressorNode` applies automatic makeup gain (`-threshold * (1 - 1/ratio)` dB) which would make lower-threshold settings sound louder. A `postLimiterGain` node cancels this exactly:
+
+```js
+const compensation = Math.pow(10, threshold_dB * (1 - 1 / ratio) / 20)
+postLimiterGain.gain.value = compensation
+```
+
+This keeps signals below the threshold at their original level; only peaks above the threshold are attenuated. No waveform distortion occurs (unlike a WaveShaperNode/clipper approach).
+
+### Mono channel downmix
+Mono-mapped audio files may be encoded as stereo MP3s (with stereo reverb or effects). A `GainNode` with `channelCount = 1` and `channelCountMode = 'explicit'` is inserted between the `AnalyserNode` and the channel's gain chain, downmixing to true mono before the `StereoPannerNode` positions it.
 
 ### Level metering
 Each source file has an `AnalyserNode` (fftSize 256, smoothingTimeConstant 0.75) tapped before the channel gain. Stereo pairs share one analyser, guaranteeing cohesive L/R meter movement. `getSourceLevel(fileKey)` computes RMS × 7, clamped to 0–1.
@@ -132,7 +161,9 @@ Each source file has an `AnalyserNode` (fftSize 256, smoothingTimeConstant 0.75)
 
 - **Solo:** global SOLO button acts on selected channel(s); multiple channels can be soloed simultaneously
 - **Mute:** global MUTE button acts on selected channel(s); solo overrides mute
-- **Stereo pairs:** selecting, soloing, muting, volume, EQ, and pan all affect both channels in a stereo pair simultaneously
+- **Stereo pairs:** selecting, soloing, muting, volume, EQ, and pan/bal all affect both channels in a stereo pair simultaneously
+- **Stereo imaging:** stereo pair channels default to L hard-left / R hard-right, preserving the source's stereo image. The PAN/BAL knob shifts the image as a balance control (center = natural stereo).
+- **Mono integrity:** mono channel files are downmixed to a single channel before processing, ensuring they behave as point sources in the stereo field regardless of their MP3 encoding.
 - **Level meters:** dark when audio is not started, dark on channels without audio files, and react to actual signal content (go flat on silent bars)
 - **Mobile:** landscape-only; portrait shows a rotate overlay; mixer scales to fit viewport with a minimum scale of 0.65 to keep controls readable; scrolls if viewport is too small even at minimum scale
 
@@ -171,3 +202,13 @@ npm run deploy       # build + push dist/ to gh-pages branch
 | TREBLE | High shelf | 4000 Hz | ±12 dB |
 
 All knobs use the range 0–100, where 50 = neutral (0 dB / default frequency).
+
+---
+
+## Changelog
+
+### v1.1
+- **Limiter fixed:** replaced WaveShaperNode (hard clipper, caused distortion/robotic sound) and the pre-compressor-gain approach (behaved like a volume knob) with a properly configured `DynamicsCompressorNode`. Threshold range narrowed to 0 to −20 dB; `postLimiterGain` cancels the automatic makeup gain so quiet parts stay at the same level while only peaks above the threshold are limited.
+- **Stereo pair imaging fixed:** stereo L/R channels now default to hard-left / hard-right pan, correctly preserving the stereo image of DRUM, KEYS, and SEQ source files.
+- **PAN/BAL control redesigned for stereo pairs:** knob now acts as a balance control (0 = natural stereo, centre always restores full L/R imaging). Previously it set the same pan on both channels, collapsing stereo.
+- **Mono channel downmix added:** a single-channel `GainNode` downmixes mono-mapped files to true mono before the signal chain, preventing stereo-encoded MP3s from leaking stereo width into nominally mono channels.

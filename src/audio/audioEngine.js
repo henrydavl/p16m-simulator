@@ -34,8 +34,8 @@ const AUDIO_URLS = Object.fromEntries(
 
 let ctx = null
 let masterGain = null
-let limiterInputGain = null
 let limiter = null
+let postLimiterGain = null
 let outputGain = null
 const channelNodes = {} // id → { gainNode, pannerNode, volume, active }
 const analysers = {}    // fileKey → AnalyserNode
@@ -107,25 +107,26 @@ export async function initAudio(onProgress) {
   masterGain = ctx.createGain()
   masterGain.gain.value = 0.75
 
-  // Pre-limiter gain: controlled by the LIMITER knob (0–100 → 0–1).
-  // Threshold is fixed at -1 dB so makeup gain is negligible (~0.95 dB),
-  // avoiding the confusing "louder at mid positions" behaviour.
-  limiterInputGain = ctx.createGain()
-  limiterInputGain.gain.value = 1.0
-
+  // Brick-wall limiter: high ratio, fast attack, no knee
+  // At threshold=0dB (knob=100) the compressor is transparent; peaks are only limited
+  // when the knob is turned down. postLimiterGain cancels Web Audio's automatic makeup
+  // gain so quiet parts stay at the same level regardless of threshold setting.
   limiter = ctx.createDynamicsCompressor()
-  limiter.threshold.value = -1
+  limiter.threshold.value = 0
   limiter.ratio.value = 20
   limiter.attack.value = 0.003
   limiter.release.value = 0.25
   limiter.knee.value = 0
 
+  postLimiterGain = ctx.createGain()
+  postLimiterGain.gain.value = 1.0
+
   outputGain = ctx.createGain()
   outputGain.gain.value = 0.75
 
-  masterGain.connect(limiterInputGain)
-  limiterInputGain.connect(limiter)
-  limiter.connect(outputGain)
+  masterGain.connect(limiter)
+  limiter.connect(postLimiterGain)
+  postLimiterGain.connect(outputGain)
   outputGain.connect(ctx.destination)
 
   for (let id = 1; id <= 16; id++) buildChannelChain(id)
@@ -181,7 +182,13 @@ export async function initAudio(onProgress) {
     source.loop = true
     const analyser = makeAnalyser(filename)
     source.connect(analyser)
-    analyser.connect(channelNodes[channelId].gainNode)
+    // Downmix to true mono: if the MP3 was encoded stereo (reverb tails, etc.)
+    // this strips the stereo image so the StereoPanner positions it correctly.
+    const monoMix = ctx.createGain()
+    monoMix.channelCount = 1
+    monoMix.channelCountMode = 'explicit'
+    analyser.connect(monoMix)
+    monoMix.connect(channelNodes[channelId].gainNode)
     pendingSources.push(source)
   }
 
@@ -216,8 +223,15 @@ export function setMasterVolume(value) {
 }
 
 export function setLimiterThreshold(value) {
-  if (!limiterInputGain || !ctx) return
-  limiterInputGain.gain.setTargetAtTime(value / 100, ctx.currentTime, 0.015)
+  if (!limiter || !postLimiterGain || !ctx) return
+  // Knob 100→0 maps to threshold 0dB→-20dB.
+  // 0dB = fully transparent; -20dB = aggressive peak limiting.
+  const threshold_dB = -(100 - value) * 0.2
+  limiter.threshold.setTargetAtTime(threshold_dB, ctx.currentTime, 0.015)
+  // Cancel Web Audio's automatic makeup gain: makeup = -threshold * (1 - 1/ratio) dB.
+  // Compensation (linear) = inverse of that: 10^(threshold * (1 - 1/ratio) / 20)
+  const compensation = Math.pow(10, threshold_dB * (1 - 1 / limiter.ratio.value) / 20)
+  postLimiterGain.gain.setTargetAtTime(compensation, ctx.currentTime, 0.015)
 }
 
 export function setOutputLevel(value) {
@@ -230,8 +244,8 @@ export async function stopAudio() {
   await ctx.close()
   ctx = null
   masterGain = null
-  limiterInputGain = null
   limiter = null
+  postLimiterGain = null
   outputGain = null
   Object.keys(analysers).forEach(k => delete analysers[k])
   Object.keys(analyserBufs).forEach(k => delete analyserBufs[k])
