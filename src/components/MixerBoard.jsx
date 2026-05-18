@@ -539,20 +539,20 @@ function HwTopBtn({ label, active = false, color = 'neutral', onClick }) {
 /** Circular-arc LED array for PAN/BAL — dots placed on a true circle arc (bowl shape) */
 function PanBalDisplay({ pan, hasSelection }) {
   const N = 9
-  const W = 80, H = 22
+  const W = 80, H = 14
   const CX = W / 2
   const R = 120           // large radius → subtle arc
   const HALF_ARC = 17.5  // degrees each side of centre
   const DOT_R = 3.5
-  // Circle centre is above the SVG so the bottom of the arc is near the bottom of H
-  const CY_CIRC = H - DOT_R - R
+  // Circle centre is below the SVG so the top of the arc is near the top of H (dome shape)
+  const CY_CIRC = DOT_R + R
 
   const offset = Math.round((pan / 50) * 4)
   const minIdx = Math.min(4, 4 + offset)
   const maxIdx = Math.max(4, 4 + offset)
 
   const dots = Array.from({ length: N }, (_, i) => {
-    const deg = 90 + ((i - 4) / 4) * HALF_ARC   // 90° = straight down (SVG)
+    const deg = 270 + ((i - 4) / 4) * HALF_ARC  // 270° = straight up (SVG)
     const rad = (deg * Math.PI) / 180
     return {
       cx: CX + R * Math.cos(rad),
