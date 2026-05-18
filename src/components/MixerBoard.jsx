@@ -566,13 +566,15 @@ function PanBalDisplay({ pan, hasSelection }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center' }}>
       <svg width={W} height={H}>
         {dots.map(({ cx, cy, lit, center }, i) => {
-          const col = lit ? (center ? '#22c55e' : '#f59e0b') : '#1a1a1a'
+          const centered = pan === 0
+          const col = lit ? (centered ? '#22c55e' : '#ef4444') : '#1a1a1a'
+          const glow = centered ? '#22c55e' : '#ef4444'
           return (
             <circle
               key={i}
               cx={cx.toFixed(1)} cy={cy.toFixed(1)} r={DOT_R}
               fill={col}
-              style={{ filter: lit ? `drop-shadow(0 0 3px ${center ? '#22c55e' : '#f59e0b'})` : 'none' }}
+              style={{ filter: lit ? `drop-shadow(0 0 3px ${glow})` : 'none' }}
             />
           )
         })}
@@ -612,8 +614,8 @@ function VolumeTriangle({ volume }) {
       {dots.map(({ cx, cy, lit }, i) => (
         <circle
           key={i} cx={cx} cy={cy} r={3}
-          fill={lit ? '#f59e0b' : '#1a1a1a'}
-          style={{ filter: lit ? 'drop-shadow(0 0 3px #f59e0b)' : 'none' }}
+          fill={lit ? '#ef4444' : '#1a1a1a'}
+          style={{ filter: lit ? 'drop-shadow(0 0 3px #ef4444)' : 'none' }}
         />
       ))}
     </svg>
