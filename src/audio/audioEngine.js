@@ -34,6 +34,10 @@ const AUDIO_URLS = Object.fromEntries(
 
 let ctx = null
 let masterGain = null
+let masterBass = null
+let masterMid = null
+let masterTreble = null
+let masterPanner = null
 let limiter = null
 let postLimiterGain = null
 let outputGain = null
@@ -107,6 +111,30 @@ export async function initAudio(onProgress) {
   masterGain = ctx.createGain()
   masterGain.gain.value = 0.75
 
+  masterBass = ctx.createBiquadFilter()
+  masterBass.type = 'lowshelf'
+  masterBass.frequency.value = 200
+  masterBass.gain.value = 0
+
+  masterMid = ctx.createBiquadFilter()
+  masterMid.type = 'peaking'
+  masterMid.frequency.value = 1265
+  masterMid.Q.value = 1
+  masterMid.gain.value = 0
+
+  masterTreble = ctx.createBiquadFilter()
+  masterTreble.type = 'highshelf'
+  masterTreble.frequency.value = 4000
+  masterTreble.gain.value = 0
+
+  masterPanner = ctx.createStereoPanner()
+  masterPanner.pan.value = 0
+
+  masterGain.connect(masterBass)
+  masterBass.connect(masterMid)
+  masterMid.connect(masterTreble)
+  masterTreble.connect(masterPanner)
+
   // Brick-wall limiter: high ratio, fast attack, no knee
   // At threshold=0dB (knob=100) the compressor is transparent; peaks are only limited
   // when the knob is turned down. postLimiterGain cancels Web Audio's automatic makeup
@@ -124,7 +152,7 @@ export async function initAudio(onProgress) {
   outputGain = ctx.createGain()
   outputGain.gain.value = 0.75
 
-  masterGain.connect(limiter)
+  masterPanner.connect(limiter)
   limiter.connect(postLimiterGain)
   postLimiterGain.connect(outputGain)
   outputGain.connect(ctx.destination)
@@ -222,6 +250,19 @@ export function setMasterVolume(value) {
   masterGain.gain.setTargetAtTime(value / 100, ctx.currentTime, 0.015)
 }
 
+export function setMasterEQ({ bass, mid, freq, treble }) {
+  if (!masterBass || !ctx) return
+  masterBass.gain.setTargetAtTime((bass - 50) / 50 * 12, ctx.currentTime, 0.015)
+  masterMid.gain.setTargetAtTime((mid - 50) / 50 * 12, ctx.currentTime, 0.015)
+  masterTreble.gain.setTargetAtTime((treble - 50) / 50 * 12, ctx.currentTime, 0.015)
+  masterMid.frequency.setTargetAtTime(200 * Math.pow(40, freq / 100), ctx.currentTime, 0.015)
+}
+
+export function setMasterPan(value) {
+  if (!masterPanner || !ctx) return
+  masterPanner.pan.setTargetAtTime(value / 50, ctx.currentTime, 0.015)
+}
+
 export function setLimiterThreshold(value) {
   if (!limiter || !postLimiterGain || !ctx) return
   // Knob 100→0 maps to threshold 0dB→-20dB.
@@ -244,6 +285,10 @@ export async function stopAudio() {
   await ctx.close()
   ctx = null
   masterGain = null
+  masterBass = null
+  masterMid = null
+  masterTreble = null
+  masterPanner = null
   limiter = null
   postLimiterGain = null
   outputGain = null

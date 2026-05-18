@@ -2,7 +2,7 @@ import { useReducer, useState, useEffect, useRef } from 'react'
 import { CHANNELS, INITIAL_CHANNEL_STATE, INITIAL_MASTER_STATE } from '../data/channels'
 import {
   initAudio, stopAudio, setChannelVolume, setChannelActive, setChannelPan, setChannelEQ,
-  setMasterVolume, setLimiterThreshold, setOutputLevel,
+  setMasterVolume, setMasterEQ, setMasterPan, setLimiterThreshold, setOutputLevel,
   AUDIO_CHANNEL_IDS,
   CHANNEL_SOURCE_MAP,
 } from '../audio/audioEngine'
@@ -155,7 +155,9 @@ export default function MixerBoard() {
         const R = selectedPair.find(ch => ch.id % 2 === 0)
         return L.pan !== -50 ? L.pan + 50 : R.pan - 50
       })()
-    : selectedCh?.pan ?? 0
+    : selectedCh
+      ? selectedCh.pan
+      : state.master.selected ? state.master.pan : 0
   // Volume knob: follows selected channel; falls back to master when MAIN selected or nothing selected
   const activeVolume = selectedCh ? selectedCh.volume : state.master.volume
   function handleVolumeChange(v) {
@@ -166,11 +168,12 @@ export default function MixerBoard() {
       d({ type: 'UPDATE_MASTER', updates: { volume: val } })
     }
   }
+  const eqSource = selectedCh ?? (state.master.selected ? state.master : null)
   const displayEq = {
-    bass:   selectedCh?.bass   ?? 50,
-    mid:    selectedCh?.mid    ?? 50,
-    freq:   selectedCh?.freq   ?? 50,
-    treble: selectedCh?.treble ?? 50,
+    bass:   eqSource?.bass   ?? 50,
+    mid:    eqSource?.mid    ?? 50,
+    freq:   eqSource?.freq   ?? 50,
+    treble: eqSource?.treble ?? 50,
   }
 
   const d = (action) => dispatch(action)
@@ -197,6 +200,8 @@ export default function MixerBoard() {
       setChannelEQ(ch.id, { bass: ch.bass, mid: ch.mid, freq: ch.freq, treble: ch.treble })
     })
     setMasterVolume(state.master.volume)
+    setMasterEQ({ bass: state.master.bass, mid: state.master.mid, freq: state.master.freq, treble: state.master.treble })
+    setMasterPan(state.master.pan)
     setLimiterThreshold(state.master.limiter)
     setOutputLevel(state.master.outputLevel)
   }, [state, audioStatus])
@@ -357,8 +362,8 @@ export default function MixerBoard() {
             {/* Vertical divider */}
             <div style={{ width: 1, background: '#1e1e1e', alignSelf: 'stretch', marginRight: 20 }} />
 
-            {/* COL 2 — EQUALIZER (visual) + PAN/BAL */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1, paddingRight: 20 }}>
+            {/* COL 2 — EQUALIZER + PAN/BAL (inactive when nothing selected) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1, paddingRight: 20, opacity: (selectedCh || state.master.selected) ? 1 : 0.35, pointerEvents: (selectedCh || state.master.selected) ? 'auto' : 'none', transition: 'opacity 150ms' }}>
 
               {/* EQUALIZER */}
               <div>
@@ -372,10 +377,11 @@ export default function MixerBoard() {
                   ].map(([lbl, val, key]) => (
                     <Knob
                       key={lbl} value={val} min={0} max={100} label={lbl} size={46}
-                      onChange={(v) => selectedCh && d({
-                        type: 'UPDATE_SELECTED_EQ',
-                        updates: { [lbl.toLowerCase()]: Math.round(v) },
-                      })}
+                      onChange={(v) => {
+                        const val = Math.round(v)
+                        if (selectedCh) d({ type: 'UPDATE_SELECTED_EQ', updates: { [lbl.toLowerCase()]: val } })
+                        else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { [lbl.toLowerCase()]: val } })
+                      }}
                     />
                   ))}
                 </div>
@@ -390,10 +396,14 @@ export default function MixerBoard() {
                 </div>
                 <SectionLabel label="PAN/BAL" />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8 }}>
-                  <PanBalDisplay pan={displayPan} hasSelection={!!selectedCh} />
+                  <PanBalDisplay pan={displayPan} hasSelection={!!(selectedCh || state.master.selected)} />
                   <Knob
                     value={displayPan} min={-50} max={50} label="" size={56}
-                    onChange={(v) => selectedCh && d({ type: 'UPDATE_SELECTED_PAN', pan: Math.round(v) })}
+                    onChange={(v) => {
+                      const val = Math.round(v)
+                      if (selectedCh) d({ type: 'UPDATE_SELECTED_PAN', pan: val })
+                      else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { pan: val } })
+                    }}
                   />
                 </div>
               </div>

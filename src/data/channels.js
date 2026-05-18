@@ -34,4 +34,9 @@ export const INITIAL_MASTER_STATE = {
   limiter: 100,
   outputLevel: 75,
   selected: false,
+  bass: 50,
+  mid: 50,
+  freq: 50,
+  treble: 50,
+  pan: 0,
 }
