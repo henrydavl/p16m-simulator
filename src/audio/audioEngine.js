@@ -22,8 +22,8 @@ export const AUDIO_CHANNEL_IDS = new Set([
 // Resolved at module load via Vite — keys are filenames without extension
 const AUDIO_URLS = Object.fromEntries(
   Object.entries(
-    import.meta.glob('/src/assets/audio/*.wav', { eager: true, query: '?url', import: 'default' })
-  ).map(([path, url]) => [path.split('/').pop().replace(/\.wav$/i, ''), url])
+    import.meta.glob('/src/assets/audio/*.mp3', { eager: true, query: '?url', import: 'default' })
+  ).map(([path, url]) => [path.split('/').pop().replace(/\.mp3$/i, ''), url])
 )
 
 let ctx = null
