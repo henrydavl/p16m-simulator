@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
+:root {
+  --bg-page: #030712;
+}
+
+html[data-theme="light"] {
+  --bg-page: #e8e8e8;
+}
+
 body {
   margin: 0;
-  background: #030712;
+  background: var(--bg-page);
 }
 
 #root {
