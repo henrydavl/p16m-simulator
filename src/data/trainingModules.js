@@ -4,6 +4,7 @@
 // Milestone content uses \n\n for paragraph breaks (rendered with white-space: pre-line).
 // Milestones with a `quiz` array show interactive multiple-choice questions;
 // all must be answered correctly before the milestone can be marked complete.
+// `highlight` maps each milestone to a mixer zone: 'eq' | 'pan' | 'col3' | 'channels' | null
 
 export const MODULES = [
   {
@@ -14,6 +15,7 @@ export const MODULES = [
       {
         id: 1,
         title: 'What is the P16-M?',
+        highlight: null,
         content: `The Behringer Powerplay P16-M is a personal in-ear monitor mixer. It lets each musician on stage control their own headphone mix — independently from the main FOH (front of house) mix.
 
 Instead of asking the sound engineer to "turn up the drums in my ears," you control your own blend right on this unit. Your adjustments do NOT affect the main speakers or any other musician's monitor mix.
@@ -30,6 +32,7 @@ PRO TIP: When you first sit down, set all channels to 0 and start fresh. Slowly 
       {
         id: 2,
         title: 'Your Channel Map',
+        highlight: 'channels',
         content: `All 16 channels are pre-assigned to specific instruments in your church setup. Knowing which channel is which lets you dial in your mix quickly during soundcheck.
 
 ⚠️ IMPORTANT: Channel assignments may differ between campuses. Always confirm with your campus sound team before your first rehearsal.
@@ -61,66 +64,90 @@ CH 16 — ACC: Accordion or additional acoustic instrument.`,
       {
         id: 1,
         title: 'EQ Knobs',
+        highlight: 'eq',
         content: `The four EQ knobs shape the tone of your monitor mix. They act on the selected channel — or on the full mix when MAIN is selected. Center position (50%) is always flat/neutral.
 
-BASS — Low Frequency EQ | ±12 dB @ 100 Hz, shelving
-Shelving EQ fixed at 100 Hz. Affects all frequencies below 100 Hz equally. Boost if your mix feels thin and lacks warmth. Cut if it sounds boomy or muddy. Small adjustments go a long way.
+BASS — Low Frequency EQ | ±12 dB, shelving
+Fixed low-shelf at 200 Hz. Affects all frequencies below 200 Hz equally. Boost if your mix feels thin and lacks warmth. Cut if it sounds boomy or muddy. Small adjustments go a long way.
 
 MID — Midrange EQ | ±12 dB, semi-parametric
 Semi-parametric midrange with up to 12 dB of boost or cut. Use with the FREQ knob to target a specific frequency. This is where vocals and instruments sit — a slight cut can reduce harshness; too much boost makes the mix sound "honky."
 
-FREQ — Mid Frequency Sweep | 100 Hz to 10 kHz
+FREQ — Mid Frequency Sweep | 200 Hz to 8 kHz
 Sweeps the center frequency of the MID band. Turn FREQ while boosting MID to find the problem frequency, then cut it back. This is the most surgical EQ tool on the unit — use it to zero in on harshness or muddiness.
 
-TREBLE — High Frequency EQ | ±12 dB @ 10 kHz, shelving
-Shelving EQ fixed at 10 kHz. Affects all frequencies above 10 kHz equally. Boost for more "air" and clarity on cymbals or acoustic guitar. Cut if your mix is too bright or sibilant (harsh "s" sounds in vocals).`,
+TREBLE — High Frequency EQ | ±12 dB, shelving
+Fixed high-shelf at 4 kHz. Affects all frequencies above 4 kHz equally. Boost for more "air" and clarity on cymbals or acoustic guitar. Cut if your mix is too bright or sibilant (harsh "s" sounds in vocals).
+
+RULE OF THUMB: Cut what sounds bad rather than boosting everything. Boosting bass, mid, and treble together just raises volume — not clarity.`,
       },
       {
         id: 2,
-        title: 'Volume, Limiter & Output',
-        content: `VOLUME — Master Volume
-The main knob. Controls your total mix loudness. Start at 50% and adjust. Never max this out — protect your hearing, especially during a long service.
+        title: 'Volume, Limiter & Output Level',
+        highlight: 'col3',
+        content: `These three controls live in the OUTPUT / VOLUME section on the right side of the unit.
 
-LIMITER — Peak Protection | Ratio 1:∞
-Hard-limiting that clamps the signal completely once it hits the threshold, preventing any peaks above that level. Sets a hard ceiling on the maximum output volume. Set this BEFORE every service to protect your hearing from sudden loud spikes.
+VOLUME — Master Mix Level
+The main knob. Controls your total mix loudness in your ears. Start at 50% and adjust from there. Never max this out — protect your hearing, especially during a long service.
 
-LEVEL — Output Level
-Sets the final output level going to your IEM or headphones. This is separate from master VOLUME. Use it to trim if one side feels louder than the other.
+LIMITER — Peak Protection
+Hard-limiting that clamps the signal completely once it hits the threshold, preventing any peaks above that ceiling. Set this BEFORE every service — it is your safety net against sudden loud spikes (a drummer hitting the kit hard, a mic bump, etc.).
 
-PAN/BAL — Stereo Position
-For stereo channel pairs (like DRUM L/R or KEYS L/R), pan each channel left or right to preserve the stereo image. For mono sources, center is usually best unless you want spatial separation.
+LEVEL — Output Trim
+Sets the final output level going to your IEM or headphones. This is separate from master VOLUME. Use it to fine-tune if one side of your IEMs feels louder than the other, or if your IEMs are inherently louder than your headphones.
 
-CHANNEL FADERS — Individual Channel Volume
-The vertical sliders at the bottom. Each controls how loud one specific instrument is in your headphones. This is your primary mixing tool — use it the most.
-
-STORE — Save User Preset
-Saves your current mix settings to one of the 16 available user presets. Use after dialing in a mix so you can recall it instantly at the next rehearsal or service.
-
-RECALL — Load User Preset
-Loads one of the 16 saved user presets. Great for switching between different service configurations quickly.`,
+QUICK ORDER OF OPERATIONS
+1. Set LIMITER first (safety ceiling)
+2. Set LEVEL for your IEM sensitivity
+3. Use VOLUME as your everyday loudness control`,
       },
       {
         id: 3,
+        title: 'Pan, Balance & Channel Faders',
+        highlight: ['pan', 'channels'],
+        content: `PAN/BAL — Stereo Position
+For stereo channel pairs (like DRUM L/R or KEYS L/R), the knob acts as a balance control — it shifts the stereo image left or right. Center always restores natural stereo (L hard-left, R hard-right).
+
+For mono channels (SYNTH, BASS, GTR 1, etc.), center is usually best unless you intentionally want that instrument positioned to one side.
+
+STEREO IMAGING PRINCIPLE
+The P16-M defaults each stereo pair to hard-left and hard-right. This preserves the original recording's stereo spread. Moving the balance control shifts the whole image — turning it counter-clockwise pulls it left, clockwise pushes it right.
+
+CHANNEL FADERS — Individual Channel Volume
+Each channel button selects that instrument. Its volume is controlled by the VOLUME knob while it is selected. This is your primary mixing tool — you will use this the most.
+
+MIXING IN LAYERS
+• Your own instrument: slightly above everything else
+• Timing references (CLICK, BASS, DRUMS): clearly audible, not dominant
+• Supporting parts (KEYS, SEQ, GTR): background blend
+• Vocals (ALL VCL, MD): prominent enough to hear cues and lyrics
+
+STORE / RECALL (Hardware Feature)
+On the physical P16-M, STORE saves your current mix to one of 16 presets and RECALL loads it back. This is useful between rehearsals. These buttons are present on the device but are not yet implemented in this simulator.`,
+      },
+      {
+        id: 4,
         title: 'Workflow: Dialing In Your Mix',
+        highlight: null,
         content: `Follow this order every time you sit down at the P16-M during soundcheck:
 
 STEP 1 — SELECT A CHANNEL
 Press its number button at the bottom of the unit.
 
 STEP 2 — ADJUST THE CHANNEL FADER
-The vertical slider sets that instrument's volume in your ears.
+The VOLUME knob sets that instrument's level in your ears while the channel is selected.
 
 STEP 3 — SET PAN / BALANCE
-For stereo pairs (drum L/R, keys L/R), pan them left and right respectively.
+For stereo pairs (DRUM L/R, KEYS L/R), keep them hard-left and hard-right respectively. Only adjust balance if the stereo image feels wrong.
 
 STEP 4 — USE EQ SPARINGLY
-Bass/Mid/Treble adjust the selected channel's tone. Only touch EQ if the sound is genuinely too harsh or muddy — small cuts are almost always better than big boosts.
+BASS/MID/TREBLE adjust the selected channel's tone. Only touch EQ if the sound is genuinely too harsh or muddy — small cuts are almost always better than big boosts.
 
 STEP 5 — SET MASTER VOLUME
-Start at 50% and increase slowly. Keep under 75% to protect your hearing.
+Press MAIN, then bring VOLUME to 50% and increase slowly. Stay under 75% to protect your hearing.
 
 STEP 6 — SET THE LIMITER
-Set a safe ceiling before the service starts. Treat this as a non-negotiable step every single time.`,
+Set a safe ceiling before the service starts. Treat this as a non-negotiable step every single time — it takes 5 seconds and protects your hearing for a lifetime.`,
       },
     ],
   },
@@ -132,6 +159,7 @@ Set a safe ceiling before the service starts. Treat this as a non-negotiable ste
       {
         id: 1,
         title: 'Hearing Safety',
+        highlight: 'col3',
         content: `⚠️ HEARING WARNING
 In-ear monitors deliver sound directly into your ear canal. Long services at high volume cause permanent, irreversible hearing damage. Use the LIMITER knob to set a ceiling, and reduce volume immediately if you feel ringing after rehearsal.
 
@@ -145,7 +173,7 @@ TAKE BREAKS
 During long rehearsals, remove your IEMs for a few minutes every hour. Let your ears recover.
 
 WATCH FOR RINGING
-If your ears ring after rehearsal, that is a warning sign. Reduce your volume next time. Tinnitus (ringing) is cumulative damage.
+If your ears ring after rehearsal, that is a warning sign. Reduce your volume next time. Tinnitus (ringing) is cumulative damage — it does not heal.
 
 FIT MATTERS
 A good IEM seal blocks ambient stage noise, which means you don't need to fight volume with more volume. Invest in well-fitting earpieces — it protects your hearing and improves your mix quality.`,
@@ -153,6 +181,7 @@ A good IEM seal blocks ambient stage noise, which means you don't need to fight 
       {
         id: 2,
         title: 'Real-World Scenarios',
+        highlight: null,
         content: `Here are common situations you'll face and how to fix them on the P16-M:
 
 CAN'T HEAR THE CLICK TRACK
@@ -182,6 +211,7 @@ Fix (check in order):
       {
         id: 3,
         title: 'Common Mistakes to Avoid',
+        highlight: null,
         content: `MAXING THE VOLUME KNOB
 This damages your hearing and causes distortion. Start at 50% and work up gradually.
 
@@ -210,6 +240,7 @@ Set it every time. It takes 5 seconds and protects your hearing for a lifetime.`
       {
         id: 1,
         title: 'Quiz — 5 Questions',
+        highlight: null,
         content: 'Answer all 5 questions correctly to complete this milestone. Select an answer for each question, then press CHECK ANSWERS.',
         quiz: [
           {
@@ -272,7 +303,8 @@ Set it every time. It takes 5 seconds and protects your hearing for a lifetime.`
       {
         id: 2,
         title: 'Quick Reference',
-        content: `Keep this reference in mind during every rehearsal and service.
+        highlight: null,
+        content: `Keep this cheat sheet in mind during every rehearsal and service.
 
 CONTROL QUICK REFERENCE:
 BASS knob ........... Boosts/cuts low freq | Use when: mix sounds boomy (cut) or thin (boost)
@@ -280,19 +312,12 @@ MID knob ............ Boosts/cuts midrange | Use when: mix sounds harsh or honky
 FREQ knob ........... Sweeps mid frequency | Use when: pair with MID to find the harsh freq
 TREBLE knob ......... Boosts/cuts high freq | Use when: too bright (cut) or dull (boost)
 LIMITER ............. Sets max volume ceiling | Use when: BEFORE every single service
-LEVEL ............... Output trim | Use when: one side louder than the other
+LEVEL ............... Output trim | Use when: one side louder or IEMs too quiet/loud
 PAN/BAL ............. Stereo positioning | Use when: setting up stereo pairs like drums/keys
 VOLUME .............. Master loudness | Use when: overall mix too quiet or too loud
 Channel fader ....... Individual channel volume | Use when: ANY time — this is your main tool
 CH 15 (CLICK) ....... Metronome click track | Use when: raise when you lose the beat
 CH 13 (ALL VCL) ..... All vocals blend | Use when: need to hear melody or lyrics clearly
-
-NO SOUND? CHECK IN ORDER:
-1. Ultranet/AES50 cable is connected to the unit
-2. VOLUME knob is above 0
-3. IEMs/headphones are fully plugged in
-4. Unit is powered on — ULTRANET indicator light should be green
-5. At least one channel fader is raised above 0
 
 PRO TIP: Practice on the simulator at p16-simulator.cloud before your next rehearsal. Explore each channel and knob until the layout feels completely natural.`,
       },

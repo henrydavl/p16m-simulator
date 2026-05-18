@@ -1,18 +1,32 @@
 import { useState, useEffect } from 'react'
 import MixerBoard from './components/MixerBoard'
+import TrainingPanel from './components/training/TrainingPanel'
 
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('p16_theme') ?? 'dark')
+  const [trainingOpen, setTrainingOpen] = useState(false)
+  const [highlightZone, setHighlightZone] = useState(null)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     localStorage.setItem('p16_theme', theme)
   }, [theme])
 
+  function handleToggleTraining() {
+    if (trainingOpen) setHighlightZone(null)
+    setTrainingOpen(o => !o)
+  }
+
   const dark = theme === 'dark'
 
   return (
     <>
+      <TrainingPanel
+        open={trainingOpen}
+        onToggle={handleToggleTraining}
+        theme={theme}
+        onHighlight={setHighlightZone}
+      />
       <button
         onClick={() => setTheme(dark ? 'light' : 'dark')}
         style={{
@@ -28,7 +42,7 @@ export default function App() {
       >
         {dark ? '◐ LIGHT' : '◑ DARK'}
       </button>
-      <MixerBoard />
+      <MixerBoard highlightZone={highlightZone} />
     </>
   )
 }

@@ -112,7 +112,25 @@ function reducer(state, action) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function MixerBoard() {
+function zoneHL(zone, activeZone) {
+  const zones = Array.isArray(activeZone) ? activeZone : [activeZone]
+  const base = {
+    transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease',
+    borderRadius: 6,
+    position: 'relative',
+    transformOrigin: 'center center',
+  }
+  if (!activeZone || !zones.includes(zone)) return base
+  const scale = zone === 'channels' ? 1.05 : 1.13
+  return {
+    ...base,
+    transform: `scale(${scale})`,
+    zIndex: 10,
+    boxShadow: '0 0 0 3px rgba(192,112,24,0.9), 0 0 0 5px rgba(192,112,24,0.2), 0 8px 32px rgba(192,112,24,0.35)',
+  }
+}
+
+export default function MixerBoard({ highlightZone = null }) {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [audioStatus, setAudioStatus] = useState('idle') // 'idle' | 'loading' | 'playing'
   const [loadProgress, setLoadProgress] = useState({ done: 0, total: 0 })
@@ -239,7 +257,7 @@ export default function MixerBoard() {
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
           borderRadius: 10,
-          overflow: 'hidden',
+          overflow: 'visible',
           border: '1px solid #2a2a2a',
           boxShadow: '0 24px 64px rgba(0,0,0,0.85), 0 4px 12px rgba(0,0,0,0.6)',
         }}
@@ -249,6 +267,7 @@ export default function MixerBoard() {
           style={{
             background: 'linear-gradient(180deg, #c8c8c8 0%, #bcbcbc 50%, #b4b4b4 100%)',
             borderBottom: '2px solid #888',
+            borderRadius: '9px 9px 0 0',
             padding: '8px 20px',
             display: 'flex',
             alignItems: 'center',
@@ -366,7 +385,7 @@ export default function MixerBoard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1, paddingRight: 20, opacity: (selectedCh || state.master.selected) ? 1 : 0.35, pointerEvents: (selectedCh || state.master.selected) ? 'auto' : 'none', transition: 'opacity 150ms' }}>
 
               {/* EQUALIZER */}
-              <div>
+              <div style={zoneHL('eq', highlightZone)}>
                 <SectionLabel label="EQUALIZER" />
                 <div style={{ display: 'flex', gap: 20, marginTop: 8, justifyContent: 'space-around' }}>
                   {[
@@ -388,28 +407,33 @@ export default function MixerBoard() {
               </div>
 
               {/* PAN / BAL */}
-              <div>
-                {/* ULTRANET indicator */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <span style={{ color: '#555', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.18em' }}>ULTRANET</span>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#15532e', boxShadow: '0 0 5px #16a34a' }} />
-                </div>
-                <SectionLabel label="PAN/BAL" />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8 }}>
-                  <PanBalDisplay pan={displayPan} hasSelection={!!(selectedCh || state.master.selected)} />
-                  <Knob
-                    value={displayPan} min={-50} max={50} label="" size={56}
-                    showPointer={false} showArc={false}
-                    onChange={(v) => {
-                      const val = Math.round(v)
-                      if (selectedCh) d({ type: 'UPDATE_SELECTED_PAN', pan: val })
-                      else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { pan: val } })
-                    }}
-                    onClick={() => {
-                      if (selectedCh) d({ type: 'UPDATE_SELECTED_PAN', pan: 0 })
-                      else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { pan: 0 } })
-                    }}
-                  />
+              <div style={zoneHL('pan', highlightZone)}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {/* Left col — ULTRANET, centred */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <span style={{ color: '#555', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.18em' }}>ULTRANET</span>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#15532e', boxShadow: '0 0 5px #16a34a' }} />
+                  </div>
+                  {/* Right col — label + arc + knob */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <SectionLabel label="PAN/BAL" />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+                    <PanBalDisplay pan={displayPan} hasSelection={!!(selectedCh || state.master.selected)} />
+                    <Knob
+                      value={displayPan} min={-50} max={50} label="" size={56}
+                      showPointer={false} showArc={false}
+                      onChange={(v) => {
+                        const val = Math.round(v)
+                        if (selectedCh) d({ type: 'UPDATE_SELECTED_PAN', pan: val })
+                        else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { pan: val } })
+                      }}
+                      onClick={() => {
+                        if (selectedCh) d({ type: 'UPDATE_SELECTED_PAN', pan: 0 })
+                        else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { pan: 0 } })
+                      }}
+                    />
+                  </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -418,12 +442,12 @@ export default function MixerBoard() {
             <div style={{ width: 1, background: '#1e1e1e', alignSelf: 'stretch', marginRight: 20 }} />
 
             {/* COL 3 — OUTPUT (functional) + VOLUME (functional) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 196 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 196, ...zoneHL('col3', highlightZone) }}>
 
               {/* OUTPUT — functional */}
               <div>
                 <SectionLabel label="OUTPUT" />
-                <div style={{ display: 'flex', gap: 20, marginTop: 8 }}>
+                <div style={{ display: 'flex', gap: 20, marginTop: 8, justifyContent: 'center' }}>
                   <Knob
                     value={state.master.limiter} min={0} max={100} label="LIMITER" size={48}
                     onChange={(v) => d({ type: 'UPDATE_MASTER', updates: { limiter: Math.round(v) } })}
@@ -438,10 +462,10 @@ export default function MixerBoard() {
               {/* VOLUME — context-sensitive: selected channel or master */}
               <div>
                 <SectionLabel label="VOLUME" />
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, marginTop: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 8, justifyContent: 'center' }}>
                   <VolumeTriangle volume={activeVolume} />
                   <Knob
-                    value={activeVolume} min={0} max={100} label="" size={58}
+                    value={activeVolume} min={0} max={100} label="" size={48}
                     showPointer={false}
                     onChange={handleVolumeChange}
                     onClick={() => {
@@ -455,18 +479,20 @@ export default function MixerBoard() {
           </div>
 
           {/* ═══ CHANNEL SELECT SECTION ══════════════════════════════════ */}
-          <SectionLabel label="Channel Select" />
-          <div style={{ display: 'flex', gap: 2, marginTop: 8 }}>
-            {state.channels.map((ch) => (
-              <ChannelStrip
-                key={ch.id}
-                channel={{ id: ch.id, label: ch.label, type: ch.type }}
-                state={{ mute: ch.mute, solo: ch.solo, selected: ch.selected }}
-                isActive={isActive(ch)}
-                sourceKey={CHANNEL_SOURCE_MAP[ch.id]}
-                onSelect={() => d({ type: 'SELECT_CHANNEL', id: ch.id })}
-              />
-            ))}
+          <div style={zoneHL('channels', highlightZone)}>
+            <SectionLabel label="Channel Select" />
+            <div style={{ display: 'flex', gap: 2, marginTop: 8 }}>
+              {state.channels.map((ch) => (
+                <ChannelStrip
+                  key={ch.id}
+                  channel={{ id: ch.id, label: ch.label, type: ch.type }}
+                  state={{ mute: ch.mute, solo: ch.solo, selected: ch.selected }}
+                  isActive={isActive(ch)}
+                  sourceKey={CHANNEL_SOURCE_MAP[ch.id]}
+                  onSelect={() => d({ type: 'SELECT_CHANNEL', id: ch.id })}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -476,6 +502,7 @@ export default function MixerBoard() {
             height: 14,
             background: 'linear-gradient(0deg, #c8c8c8 0%, #bcbcbc 50%, #b4b4b4 100%)',
             borderTop: '2px solid #888',
+            borderRadius: '0 0 9px 9px',
           }}
         />
       </div>

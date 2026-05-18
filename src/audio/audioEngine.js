@@ -63,17 +63,19 @@ function buildChannelChain(id) {
   const bassFilter = ctx.createBiquadFilter()
   bassFilter.type = 'lowshelf'
   bassFilter.frequency.value = 200
+  bassFilter.Q.value = 0.7071  // Butterworth: flattest shelf, no resonant bump at corner
   bassFilter.gain.value = 0
 
   const midFilter = ctx.createBiquadFilter()
   midFilter.type = 'peaking'
   midFilter.frequency.value = 1265  // center at freq=50 on log scale
-  midFilter.Q.value = 1
+  midFilter.Q.value = 0.8           // ~1.7 oct bandwidth — musical, not surgical
   midFilter.gain.value = 0
 
   const trebleFilter = ctx.createBiquadFilter()
   trebleFilter.type = 'highshelf'
   trebleFilter.frequency.value = 4000
+  trebleFilter.Q.value = 0.7071  // Butterworth: flattest shelf, no resonant bump at corner
   trebleFilter.gain.value = 0
 
   const pannerNode = ctx.createStereoPanner()
@@ -114,17 +116,19 @@ export async function initAudio(onProgress) {
   masterBass = ctx.createBiquadFilter()
   masterBass.type = 'lowshelf'
   masterBass.frequency.value = 200
+  masterBass.Q.value = 0.7071
   masterBass.gain.value = 0
 
   masterMid = ctx.createBiquadFilter()
   masterMid.type = 'peaking'
   masterMid.frequency.value = 1265
-  masterMid.Q.value = 1
+  masterMid.Q.value = 0.8
   masterMid.gain.value = 0
 
   masterTreble = ctx.createBiquadFilter()
   masterTreble.type = 'highshelf'
   masterTreble.frequency.value = 4000
+  masterTreble.Q.value = 0.7071
   masterTreble.gain.value = 0
 
   masterPanner = ctx.createStereoPanner()
