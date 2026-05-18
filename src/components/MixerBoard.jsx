@@ -598,7 +598,7 @@ function PanBalDisplay({ pan, hasSelection }) {
 
 /** Triangle outline + diagonal LED dots for VOLUME — matches real P16-M */
 function VolumeTriangle({ volume }) {
-  const N = 6
+  const N = 8
   const W = 64, H = 40
   const litCount = Math.round((volume / 100) * N)
 
