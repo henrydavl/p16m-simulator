@@ -1,4 +1,4 @@
-import { useReducer, useState, useEffect } from 'react'
+import { useReducer, useState, useEffect, useRef } from 'react'
 import { CHANNELS, INITIAL_CHANNEL_STATE, INITIAL_MASTER_STATE } from '../data/channels'
 import {
   initAudio, setChannelVolume, setChannelActive, setChannelPan, setChannelEQ,
@@ -93,6 +93,27 @@ export default function MixerBoard() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [audioStatus, setAudioStatus] = useState('idle') // 'idle' | 'loading' | 'playing'
   const [loadProgress, setLoadProgress] = useState({ done: 0, total: 0 })
+  const [scale, setScale] = useState(1)
+  const [isPortrait, setIsPortrait] = useState(false)
+  const mixerRef = useRef(null)
+
+  useEffect(() => {
+    function update() {
+      setIsPortrait(window.matchMedia('(orientation: portrait)').matches)
+      const el = mixerRef.current
+      if (!el) return
+      const s = Math.min(
+        (window.innerWidth - 24) / el.offsetWidth,
+        (window.innerHeight - 24) / el.offsetHeight,
+        1
+      )
+      setScale(s)
+    }
+    update()
+    window.addEventListener('resize', update)
+    window.addEventListener('orientationchange', () => setTimeout(update, 120))
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   const anySolo = state.channels.some((ch) => ch.solo)
   const anyMute = state.channels.some((ch) => ch.mute)
@@ -148,12 +169,36 @@ export default function MixerBoard() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center"
-      style={{ background: '#060606', padding: '24px 16px', gap: 14 }}
+      style={{
+        background: '#060606', height: '100dvh', gap: 14,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden',
+      }}
     >
+      {/* Portrait blocker */}
+      {isPortrait && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 999,
+          background: '#060606',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 16,
+        }}>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <rect x="14" y="4" width="20" height="32" rx="3" stroke="#555" strokeWidth="2" />
+            <path d="M24 42 L30 36 L18 36 Z" fill="#555" />
+          </svg>
+          <span style={{ color: '#555', fontFamily: 'monospace', fontSize: 11, letterSpacing: '0.2em' }}>
+            ROTATE DEVICE
+          </span>
+        </div>
+      )}
+
       {/* ── Device shell ───────────────────────────────────────────────── */}
       <div
+        ref={mixerRef}
         style={{
+          transform: `scale(${scale})`,
+          transformOrigin: 'center center',
           borderRadius: 10,
           overflow: 'hidden',
           border: '1px solid #2a2a2a',
