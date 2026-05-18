@@ -1,6 +1,6 @@
 import LevelMeter from './LevelMeter'
 
-export default function ChannelStrip({ channel, state, isActive, onSelect }) {
+export default function ChannelStrip({ channel, state, isActive, sourceKey, onSelect }) {
   const { id, label } = channel
   const { mute, solo, selected } = state
   const meterPhase = (id * 1.3) % (2 * Math.PI)
@@ -31,7 +31,7 @@ export default function ChannelStrip({ channel, state, isActive, onSelect }) {
       }}
     >
       {/* Level meter */}
-      <LevelMeter active={isActive} phase={meterPhase} />
+      <LevelMeter active={isActive} phase={meterPhase} sourceKey={sourceKey} />
 
       {/* Hardware-style channel SELECT button */}
       <button

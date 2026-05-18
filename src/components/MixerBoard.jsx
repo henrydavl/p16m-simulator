@@ -1,9 +1,10 @@
 import { useReducer, useState, useEffect, useRef } from 'react'
 import { CHANNELS, INITIAL_CHANNEL_STATE, INITIAL_MASTER_STATE } from '../data/channels'
 import {
-  initAudio, setChannelVolume, setChannelActive, setChannelPan, setChannelEQ,
+  initAudio, stopAudio, setChannelVolume, setChannelActive, setChannelPan, setChannelEQ,
   setMasterVolume, setLimiterThreshold, setOutputLevel,
   AUDIO_CHANNEL_IDS,
+  CHANNEL_SOURCE_MAP,
 } from '../audio/audioEngine'
 import Knob from './Knob'
 import ChannelStrip from './ChannelStrip'
@@ -279,10 +280,19 @@ export default function MixerBoard() {
               {/* Audio transport */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 {audioStatus === 'playing' ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <button
+                    type="button"
+                    onClick={async () => { await stopAudio(); setAudioStatus('idle') }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      height: 22, paddingInline: 10, borderRadius: 3,
+                      background: '#0a1c0a', border: '1px solid #163016',
+                      cursor: 'pointer',
+                    }}
+                  >
                     <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px #22c55e' }} />
-                    <span style={{ color: '#2e4a2e', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.12em' }}>AUDIO ON</span>
-                  </div>
+                    <span style={{ color: '#2e4a2e', fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.12em' }}>■ STOP</span>
+                  </button>
                 ) : (
                   <button
                     type="button"
@@ -403,6 +413,7 @@ export default function MixerBoard() {
                 channel={{ id: ch.id, label: ch.label, type: ch.type }}
                 state={{ mute: ch.mute, solo: ch.solo, selected: ch.selected }}
                 isActive={isActive(ch)}
+                sourceKey={CHANNEL_SOURCE_MAP[ch.id]}
                 onSelect={() => d({ type: 'SELECT_CHANNEL', id: ch.id })}
               />
             ))}
