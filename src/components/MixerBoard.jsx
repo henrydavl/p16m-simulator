@@ -107,7 +107,9 @@ export default function MixerBoard() {
         (window.innerHeight - 24) / el.offsetHeight,
         1
       )
-      setScale(s)
+      // Floor at 0.65 — below this the controls become too small to use;
+      // the outer container scrolls for anything that overflows.
+      setScale(Math.max(s, 0.65))
     }
     update()
     window.addEventListener('resize', update)
@@ -170,9 +172,8 @@ export default function MixerBoard() {
   return (
     <div
       style={{
-        background: '#060606', height: '100dvh', gap: 14,
+        background: '#060606', minHeight: '100dvh', gap: 14, padding: '12px 8px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        overflow: 'hidden',
       }}
     >
       {/* Portrait blocker */}
