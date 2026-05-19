@@ -2,20 +2,17 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+Only the latest version deployed at [p16-simulator.cloud](https://p16-simulator.cloud) is actively maintained.
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you discover a security vulnerability, please **do not open a public GitHub issue**.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Email: henrydavidlie@gmail.com
+
+Include:
+- A description of the vulnerability
+- Steps to reproduce
+- Potential impact
+
+You can expect an acknowledgement within 48 hours. This is a client-side only application with no backend or user data storage, so the attack surface is limited — but reports are still taken seriously.
