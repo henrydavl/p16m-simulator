@@ -19,13 +19,24 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
     ? '0 0 4px rgba(160,0,0,0.1)'
     : 'none'
 
+  const backgroundColor = solo ? '#8775008c' : mute ? '#8c191980' : '#111'
+  
+  const LED = {
+    select: { off: '#1a1a1a', on: '#22c55e', glow: '0 0 5px #22c55e80' },
+    solo:   { off: '#1a1a1a', on: '#facc15', glow: '0 0 5px #facc15' },
+    mute:   { off: '#1a1a1a', on: '#ef4444', glow: '0 0 5px #ef4444' },
+    main:   { off: '#1a1a1a', on: '#f59e0b', glow: '0 0 5px #f59e0b' },
+  }
+
+  const ledState = solo ? LED.solo : mute ? LED.mute : LED.select
+
   return (
     <div
       className="flex flex-col items-center gap-[5px] pt-[7px] pb-[6px] px-[4px] transition-all duration-150"
       style={{
         width: 58,
-        background: '#111',
-        border: `1px solid ${borderColor}`,
+        background: backgroundColor,
+        border: `2px solid ${borderColor}`,
         borderRadius: 3,
         boxShadow,
       }}
@@ -52,8 +63,8 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
         <span style={{
           position: 'absolute', top: 5, left: 5,
           width: 5, height: 5, borderRadius: '50%',
-          background: selected ? '#22c55e' : '#0c0c0c',
-          boxShadow: selected ? '0 0 5px #22c55e, 0 0 2px #22c55e' : 'none',
+          background: selected ? ledState.on : '#0c0c0c',
+          boxShadow: selected ? ledState.glow : 'none',
         }} />
         <span style={{ color: '#555', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
           {id}
@@ -64,10 +75,10 @@ export default function ChannelStrip({ channel, state, isActive, sourceKey, onSe
       <span
         className="text-center uppercase select-none"
         style={{
-          color: '#5a5a5a', fontSize: 9,
+          color: '#a2a2a2', fontSize: 9,
           fontFamily: 'monospace', letterSpacing: '0.04em',
           lineHeight: '1.2', maxWidth: 50,
-          wordBreak: 'break-word', hyphens: 'auto',
+          wordBreak: 'break-word', hyphens: 'auto'
         }}
       >
         {label}
