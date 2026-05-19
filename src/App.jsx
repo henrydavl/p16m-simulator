@@ -4,7 +4,7 @@ import TrainingPanel from './components/training/TrainingPanel'
 import { CHANNELS } from './data/channels'
 import { loadSong, unloadSong, unlockContext } from './audio/audioEngine'
 
-const CDN_BASE = 'https://cdn.p16-simulator.cloud'
+const CDN_BASE = import.meta.env.VITE_CDN_BASE
 
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('p16_theme') ?? 'dark')

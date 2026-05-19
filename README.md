@@ -30,7 +30,7 @@ Features:
 | Build tool | Vite 8 |
 | Styling | Tailwind CSS v4 |
 | Audio | Web Audio API (no external libraries) |
-| Audio hosting | Cloudflare R2 (`cdn.p16-simulator.cloud`) |
+| Audio hosting | Cloudflare R2 (URL configured via `VITE_CDN_BASE` env var) |
 | Deployment | GitHub Pages via `gh-pages` |
 
 ---
@@ -39,15 +39,19 @@ Features:
 
 ```bash
 npm install
+cp .env.example .env
+# Edit .env and set VITE_CDN_BASE to your own R2/CDN bucket URL
 npm run dev
 ```
 
-Open http://localhost:5173. Audio requires an internet connection (tracks stream from Cloudflare R2).
+Open http://localhost:5173. Audio requires an internet connection (tracks stream from your CDN).
 
 ```bash
 npm run build    # production build → dist/
 npm run deploy   # build + push to gh-pages branch
 ```
+
+> **Note:** `.env` is gitignored. You must create it from `.env.example` and point `VITE_CDN_BASE` at your own Cloudflare R2 bucket (or any HTTP file server). Without it the song list will fail to load.
 
 ---
 

@@ -1,6 +1,6 @@
 import { CHANNELS } from '../data/channels'
 
-const CDN_BASE = 'https://cdn.p16-simulator.cloud'
+const CDN_BASE = import.meta.env.VITE_CDN_BASE
 
 // Build trackKey → [channelId, ...] map from CHANNELS definitions (computed once at module load).
 // Stereo pairs produce two entries; mono tracks produce one.
