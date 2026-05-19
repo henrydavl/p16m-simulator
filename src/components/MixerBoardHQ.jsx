@@ -87,7 +87,7 @@ export default function MixerBoardHQ({
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', transform: `scale(${scale})`, transformOrigin: 'center center' }}>
         {/* Song selector row */}
         <div style={{ width: '100%' }}>
           <SongSelector
@@ -107,8 +107,6 @@ export default function MixerBoardHQ({
         <div
           ref={mixerRef}
           style={{
-            transform: `scale(${scale})`,
-            transformOrigin: 'center center',
             borderRadius: 14,
             overflow: 'visible',
             background: 'linear-gradient(160deg, #363636 0%, #262626 100%)',

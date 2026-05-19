@@ -282,7 +282,7 @@ export default function MixerBoard({
       )}
 
       {/* ── Song selector + device shell share a column so selector matches mixer width ── */}
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', transform: `scale(${scale})`, transformOrigin: 'center center' }}>
         <div style={{ width: '100%' }}>
           <SongSelector
             songs={songs}
@@ -304,8 +304,6 @@ export default function MixerBoard({
         <div
           ref={mixerRef}
           style={{
-            transform: `scale(${scale})`,
-            transformOrigin: 'center center',
             borderRadius: 10,
             overflow: 'visible',
             border: '1px solid #2a2a2a',
