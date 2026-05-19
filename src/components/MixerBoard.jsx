@@ -8,6 +8,7 @@ import {
 import Knob from './Knob'
 import ChannelStrip from './ChannelStrip'
 import SongSelector from './SongSelector'
+import MixerBoardHQ from './MixerBoardHQ'
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
@@ -130,6 +131,7 @@ function zoneHL(zone, activeZone) {
 }
 
 export default function MixerBoard({
+  skin = 'classic',
   highlightZone = null,
   songs = [],
   currentSongId = null,
@@ -206,6 +208,7 @@ export default function MixerBoard({
 
   const d = (action) => dispatch(action)
 
+  // Audio sync effect — runs regardless of skin
   useEffect(() => {
     if (activeChannelIds.size === 0) return
     const solo = state.channels.some(ch => ch.solo)
@@ -221,6 +224,36 @@ export default function MixerBoard({
     setLimiterThreshold(state.master.limiter)
     setOutputLevel(state.master.outputLevel)
   }, [state, activeChannelIds])
+
+  if (skin === 'hq') {
+    return (
+      <MixerBoardHQ
+        state={state}
+        d={d}
+        highlightZone={highlightZone}
+        songs={songs}
+        currentSongId={currentSongId}
+        isFetchingManifest={isFetchingManifest}
+        isLoadingSong={isLoadingSong}
+        loadProgress={loadProgress}
+        onSongChange={onSongChange}
+        onPlay={onPlay}
+        onStop={onStop}
+        activeChannelIds={activeChannelIds}
+        songError={songError}
+        scale={scale}
+        isPortrait={isPortrait}
+        mixerRef={mixerRef}
+        selectedCh={selectedCh}
+        displayPan={displayPan}
+        displayEq={displayEq}
+        activeVolume={activeVolume}
+        handleVolumeChange={handleVolumeChange}
+        isActive={isActive}
+        anySolo={anySolo}
+      />
+    )
+  }
 
   return (
     <div
