@@ -9,6 +9,7 @@ import Knob from './Knob'
 import ChannelStrip from './ChannelStrip'
 import SongSelector from './SongSelector'
 import MixerBoardHQ from './MixerBoardHQ'
+import KofiButton from './KofiButton'
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
@@ -573,6 +574,7 @@ export default function MixerBoard({
             {name}
           </div>
         ))}
+        <KofiButton />
       </div>
     </div>
   )

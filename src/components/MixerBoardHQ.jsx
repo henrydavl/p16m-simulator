@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Knob from './Knob'
 import SongSelector from './SongSelector'
+import KofiButton from './KofiButton'
 import { getSourceLevel } from '../audio/audioEngine'
 import logoText from '../assets/logo-text-only.png'
 
@@ -144,13 +145,21 @@ export default function MixerBoardHQ({
               {/* ── LEFT BLOCK ───────────────────────────────────────── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: 186, flexShrink: 0 }}>
 
-                {/* MIX PRESET — non-functional visual */}
-                <div style={{ opacity: 0.2, pointerEvents: 'none' }}>
-                  <HQSectionLabel label="MIX PRESET" />
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginTop: 6 }}>
-                    {['RECALL', 'STORE', 'LINK', 'GROUP'].map((l) => (
-                      <HQBtn key={l} label={l} />
-                    ))}
+                {/* MIX PRESET + CHANNELS — non-functional visual */}
+                <div style={{ opacity: 0.2, pointerEvents: 'none', display: 'flex', gap: 6 }}>
+                  <div style={{ flex: 1 }}>
+                    <HQSectionLabel label="MIX PRESET" />
+                    <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+                      <HQBtn label="RECALL" />
+                      <HQBtn label="STORE" />
+                    </div>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <HQSectionLabel label="CHANNELS" />
+                    <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+                      <HQBtn label="LINK" />
+                      <HQBtn label="GROUP" />
+                    </div>
                   </div>
                 </div>
 
@@ -251,21 +260,6 @@ export default function MixerBoardHQ({
               {/* ── CENTER BLOCK — 6 shared knobs ──────────────────── */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, ...hqZoneHL('center', highlightZone) }}>
 
-                {/* Selected channel indicator */}
-                <div style={{ textAlign: 'center', height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  {selectedCh ? (
-                    <>
-                      <span style={{ color: '#2a2a2a', fontSize: 9, fontFamily: 'monospace' }}>CH {selectedCh.id}</span>
-                      <div style={{ width: 1, height: 10, background: '#2a2a2a' }} />
-                      <span style={{ color: '#666', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em' }}>{selectedCh.label}</span>
-                    </>
-                  ) : state.master.selected ? (
-                    <span style={{ color: '#f59e0b88', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em' }}>MAIN</span>
-                  ) : (
-                    <span style={{ color: '#252525', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em' }}>— SELECT CHANNEL —</span>
-                  )}
-                </div>
-
                 {/* Top row: TREBLE, MID, PANORAMA — symmetric 3 knobs */}
                 <div style={{
                   display: 'flex', justifyContent: 'space-evenly', alignItems: 'center',
@@ -364,6 +358,7 @@ export default function MixerBoardHQ({
         {['HENRY DAVID LIE', 'KEVIN AWARD ARMELDO'].map((name) => (
           <div key={name} style={{ color: '#bbb', fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.12em' }}>{name}</div>
         ))}
+        <KofiButton />
       </div>
     </div>
   )
@@ -557,38 +552,74 @@ function HQLevelDot({ sourceKey, isActive }) {
   )
 }
 
-/** HQ channel select button */
+/** HQ channel select button — the button itself is the LED */
 function HQChannelBtn({ ch, isActive, sourceKey, onSelect }) {
   const { selected, solo, mute } = ch
-  const btnBg     = selected ? '#0c1e0c' : solo ? '#1c1800' : mute ? '#1c0000' : '#141414'
-  const btnBorder = selected ? '#1e5c1e' : solo ? '#4a3800' : mute ? '#4a0000' : '#222'
-  const labelCol  = selected ? '#4ade80' : solo ? '#facc15' : mute ? '#ef4444' : '#484848'
-  const numCol    = selected ? '#1e5c1e' : '#222'
+  const [level, setLevel] = useState(0)
+  const rafRef = useRef(null)
+
+  useEffect(() => {
+    if (!isActive || !sourceKey) {
+      cancelAnimationFrame(rafRef.current)
+      setLevel(0)
+      return
+    }
+    function tick() {
+      setLevel(getSourceLevel(sourceKey))
+      rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafRef.current)
+  }, [isActive, sourceKey])
+
+  const lit = isActive && level > 0.05
+
+  // mute/solo override selected for bg+glow so state is visible immediately
+  // border stays green when selected to show selection regardless of mute/solo
+  const btnBg = mute    ? '#2a0000'
+    : solo    ? '#2a1800'
+    : selected ? '#0c2e0c'
+    : lit     ? '#1a4a1a'
+    : '#0e0e0e'
+
+  const btnBorder = selected ? '#22c55e'
+    : solo  ? '#facc15'
+    : mute  ? '#ef4444'
+    : lit   ? '#1a3a1a'
+    : '#1e1e1e'
+
+  const btnGlow = mute   ? '0 0 6px #ef444455'
+    : solo   ? '0 0 6px #facc1555'
+    : selected ? '0 0 5px #22c55e33'
+    : lit    ? '0 0 6px #22c55e66'
+    : 'none'
+
+  const labelCol = solo ? '#facc15' : mute ? '#ef4444' : selected ? '#4ade80' : '#a2a2a2'
 
   return (
-    <button
-      type="button" onClick={onSelect}
-      style={{
-        flex: 1,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        gap: 2, paddingBlock: 5, minHeight: 52,
-        background: btnBg,
-        border: `1px solid ${btnBorder}`,
-        borderRadius: 4,
-        cursor: 'pointer',
-        transition: 'all 120ms',
-        boxShadow: selected ? '0 0 6px #22c55e22' : 'none',
-      }}
-    >
-      <HQLevelDot sourceKey={sourceKey} isActive={isActive} />
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+      <span style={{ color: '#aaa', fontSize: 9, fontFamily: 'monospace', userSelect: 'none' }}>
+        {ch.id}
+      </span>
+      <button
+        type="button" onClick={onSelect}
+        style={{
+          width: '100%', height: 28,
+          background: btnBg,
+          border: `1px solid ${btnBorder}`,
+          borderRadius: 4,
+          cursor: 'pointer',
+          transition: 'background 60ms, border-color 60ms, box-shadow 60ms',
+          boxShadow: btnGlow,
+        }}
+      />
       <span style={{
         color: labelCol, fontSize: 8, fontFamily: 'monospace',
-        letterSpacing: '0.03em', lineHeight: 1.2, textAlign: 'center',
-        maxWidth: '100%', overflow: 'hidden',
+        letterSpacing: '0.04em', textTransform: 'uppercase',
+        textAlign: 'center', lineHeight: 1.2, userSelect: 'none',
       }}>
         {ch.label}
       </span>
-      <span style={{ color: numCol, fontSize: 7, fontFamily: 'monospace' }}>{ch.id}</span>
-    </button>
+    </div>
   )
 }
