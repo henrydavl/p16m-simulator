@@ -609,7 +609,7 @@ function HwTopBtn({ label, active = false, color = 'neutral', onClick }) {
       onClick={onClick}
       className="relative flex items-center justify-center transition-all duration-100 active:scale-[0.97]"
       style={{
-        width: 44, height: 36, borderRadius: 3,
+        width: 44, height: 36, borderRadius: 3, overflow: 'hidden',
         background: active ? C.bg : '#141414',
         border: `1px solid ${active ? C.border : '#1e1e1e'}`,
         color: active ? C.text : '#2a2a2a',
@@ -618,10 +618,11 @@ function HwTopBtn({ label, active = false, color = 'neutral', onClick }) {
         cursor: onClick ? 'pointer' : 'default',
       }}
     >
-      {/* LED dot — top-left like hardware */}
+      {/* LED — top-right corner, clipped like channel buttons */}
       <span style={{
-        position: 'absolute', top: 5, left: 5,
-        width: 5, height: 5, borderRadius: '50%',
+        position: 'absolute', top: 0, right: 0,
+        width: 'calc(33%)', height: 10,
+        borderRadius: '0 3px 0 4px',
         background: active ? C.led : '#0a0a0a',
         boxShadow: active ? `0 0 5px ${C.led}` : 'none',
       }} />

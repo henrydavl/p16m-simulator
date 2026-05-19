@@ -180,7 +180,9 @@ export default function MixerBoardHQ({
                     {/* MAIN btn + ULTRANET indicator side by side */}
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                       <HQBtn
-                        label="MAIN" active={state.master.selected} color="amber"
+                        label="MAIN"
+                        active={state.master.selected}
+                        color={state.master.mute ? 'red' : 'neutral'}
                         onClick={() => d({ type: 'SELECT_MAIN' })}
                       />
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
@@ -380,9 +382,9 @@ function HQSectionLabel({ label }) {
 
 function HQBtn({ label, active = false, color = 'neutral', onClick }) {
   const C = {
-    neutral: { led: '#22c55e', bg: '#0a1c0a', border: '#163616', text: '#22c55e' },
-    yellow:  { led: '#facc15', bg: '#1c1800', border: '#3a3200', text: '#facc15' },
-    red:     { led: '#ef4444', bg: '#1c0000', border: '#3a0000', text: '#ef4444' },
+    neutral: { led: '#4ade80', bg: '#22c55e', border: '#4ade80', text: '#000' },
+    yellow:  { led: '#facc15', bg: '#7a5a00', border: '#ccaa00', text: '#fff0aa' },
+    red:     { led: '#ff4444', bg: '#7a0000', border: '#cc0000', text: '#ffaaaa' },
     amber:   { led: '#f59e0b', bg: '#1c1200', border: '#3a2800', text: '#f59e0b' },
   }[color] ?? {}
 
@@ -391,21 +393,15 @@ function HQBtn({ label, active = false, color = 'neutral', onClick }) {
       type="button" onClick={onClick}
       style={{
         flex: 1, height: 34, borderRadius: 3,
-        background: active ? C.bg : '#111',
-        border: `1px solid ${active ? C.border : '#222'}`,
-        color: active ? C.text : '#2a2a2a',
+        background: active ? C.bg : '#d0d0d0',
+        border: `1px solid ${active ? C.border : '#aaa'}`,
+        color: active ? C.text : '#000',
         fontSize: 8, fontFamily: 'monospace', letterSpacing: '0.1em', textTransform: 'uppercase',
         boxShadow: active ? `0 0 8px ${C.led}25` : 'none',
         cursor: onClick ? 'pointer' : 'default',
         position: 'relative',
       }}
     >
-      <span style={{
-        position: 'absolute', top: 4, left: 4,
-        width: 4, height: 4, borderRadius: '50%',
-        background: active ? C.led : '#1a1a1a',
-        boxShadow: active ? `0 0 4px ${C.led}` : 'none',
-      }} />
       {label}
     </button>
   )
@@ -576,11 +572,10 @@ function HQChannelBtn({ ch, isActive, sourceKey, onSelect }) {
 
   // mute/solo override selected for bg+glow so state is visible immediately
   // border stays green when selected to show selection regardless of mute/solo
-  const btnBg = mute    ? '#2a0000'
-    : solo    ? '#2a1800'
-    : selected ? '#0c2e0c'
-    : lit     ? '#1a4a1a'
-    : '#0e0e0e'
+  const btnBg = mute    ? '#7a0000'
+    : solo    ? '#7a5a00'
+    : lit     ? '#22c55e'
+    : '#d0d0d0'
 
   const btnBorder = selected ? '#22c55e'
     : solo  ? '#facc15'
@@ -598,13 +593,11 @@ function HQChannelBtn({ ch, isActive, sourceKey, onSelect }) {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-      <span style={{ color: '#aaa', fontSize: 9, fontFamily: 'monospace', userSelect: 'none' }}>
-        {ch.id}
-      </span>
       <button
         type="button" onClick={onSelect}
         style={{
           width: '100%', height: 28,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: btnBg,
           border: `1px solid ${btnBorder}`,
           borderRadius: 4,
@@ -612,7 +605,11 @@ function HQChannelBtn({ ch, isActive, sourceKey, onSelect }) {
           transition: 'background 60ms, border-color 60ms, box-shadow 60ms',
           boxShadow: btnGlow,
         }}
-      />
+      >
+        <span style={{ color: '#000', fontSize: 9, fontFamily: 'monospace', userSelect: 'none' }}>
+          {ch.id}
+        </span>
+      </button>
       <span style={{
         color: labelCol, fontSize: 8, fontFamily: 'monospace',
         letterSpacing: '0.04em', textTransform: 'uppercase',
