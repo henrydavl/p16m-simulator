@@ -8,6 +8,7 @@ const CDN_BASE = 'https://cdn.p16-simulator.cloud'
 
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('p16_theme') ?? 'dark')
+  const [skin, setSkin] = useState(() => localStorage.getItem('p16_skin') ?? 'classic')
   const [trainingOpen, setTrainingOpen] = useState(false)
   const [highlightZone, setHighlightZone] = useState(null)
 
@@ -25,6 +26,10 @@ export default function App() {
     document.documentElement.dataset.theme = theme
     localStorage.setItem('p16_theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    localStorage.setItem('p16_skin', skin)
+  }, [skin])
 
   // Fetch manifest on mount — just populate the dropdown, do NOT auto-load audio
   useEffect(() => {
@@ -107,22 +112,38 @@ export default function App() {
         theme={theme}
         onHighlight={setHighlightZone}
       />
-      <button
-        onClick={() => setTheme(dark ? 'light' : 'dark')}
-        style={{
-          position: 'fixed', top: 14, right: 14, zIndex: 300,
-          height: 30, paddingInline: 12,
-          background: dark ? '#141414' : '#d0d0d0',
-          border: `1px solid ${dark ? '#2a2a2a' : '#b0b0b0'}`,
-          borderRadius: 3,
-          color: dark ? '#555' : '#666',
-          fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em',
-          cursor: 'pointer',
-        }}
-      >
-        {dark ? '◐ LIGHT' : '◑ DARK'}
-      </button>
+      <div style={{ position: 'fixed', top: 14, right: 14, zIndex: 300, display: 'flex', gap: 6 }}>
+        <button
+          onClick={() => setSkin(skin === 'classic' ? 'hq' : 'classic')}
+          style={{
+            height: 30, paddingInline: 12,
+            background: dark ? '#141414' : '#d0d0d0',
+            border: `1px solid ${dark ? '#2a2a2a' : '#b0b0b0'}`,
+            borderRadius: 3,
+            color: skin === 'hq' ? '#f59e0b' : dark ? '#555' : '#666',
+            fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em',
+            cursor: 'pointer',
+          }}
+        >
+          {skin === 'classic' ? '⊞ P16-M' : '⊟ P16-HQ'}
+        </button>
+        <button
+          onClick={() => setTheme(dark ? 'light' : 'dark')}
+          style={{
+            height: 30, paddingInline: 12,
+            background: dark ? '#141414' : '#d0d0d0',
+            border: `1px solid ${dark ? '#2a2a2a' : '#b0b0b0'}`,
+            borderRadius: 3,
+            color: dark ? '#555' : '#666',
+            fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em',
+            cursor: 'pointer',
+          }}
+        >
+          {dark ? '◐ LIGHT' : '◑ DARK'}
+        </button>
+      </div>
       <MixerBoard
+        skin={skin}
         highlightZone={highlightZone}
         songs={songs}
         currentSongId={currentSongId}
