@@ -159,13 +159,7 @@ export async function loadSong(manifest, onProgress, signal) {
   const buffers = {}
   await Promise.all(trackEntries.map(async ([trackKey, filename]) => {
     const url = encodeURI(`${CDN_BASE}/${folder}/${filename}`)
-    // R2 serves these MP3s with no Cache-Control header, so browsers apply
-    // heuristic freshness and keep serving a stale copy even after the file
-    // changes on the CDN. 'reload' bypasses the HTTP cache and always pulls a
-    // full fresh copy (200), so updated files are picked up immediately.
-    // (Avoids the Firefox 'Content-Length exceeds response Body' bug that
-    //  'no-cache' revalidation triggers against a stale cache entry.)
-    const resp = await fetch(url, { cache: 'reload', ...(signal ? { signal } : {}) })
+    const resp = await fetch(url, signal ? { signal } : undefined)
     if (!resp.ok) throw new Error(`Failed to fetch ${filename}: ${resp.status}`)
     const arrayBuf = await resp.arrayBuffer()
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
