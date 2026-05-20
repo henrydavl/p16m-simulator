@@ -67,7 +67,7 @@ function reducer(state, action) {
           channels: state.channels.map(ch => {
             if (!ch.selected) return ch
             const base = ch.id % 2 === 1 ? -50 : 50  // L base=-50, R base=+50
-            return { ...ch, pan: Math.max(Math.min(base + B, 50), -50) }
+            return { ...ch, pan: Math.max(Math.min(base + B * 2, 50), -50) }
           }),
         }
       }
@@ -184,7 +184,7 @@ export default function MixerBoard({
     ? (() => {
         const L = selectedPair.find(ch => ch.id % 2 === 1)
         const R = selectedPair.find(ch => ch.id % 2 === 0)
-        return L.pan !== -50 ? L.pan + 50 : R.pan - 50
+        return L.pan !== -50 ? (L.pan + 50) / 2 : (R.pan - 50) / 2
       })()
     : selectedCh
       ? selectedCh.pan

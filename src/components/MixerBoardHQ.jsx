@@ -119,7 +119,7 @@ export default function MixerBoardHQ({
             background: 'linear-gradient(180deg, #6a6a6a 0%, #5a5a5a 100%)',
             borderBottom: '2px solid #111',
             borderRadius: '12px 12px 0 0',
-            padding: '8px 18px',
+            padding: '18px 18px',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
@@ -131,20 +131,20 @@ export default function MixerBoardHQ({
                 Powerplay
               </span>
             </div>
-            <img src={logoText} alt="behringer" style={{ height: 18, mixBlendMode: 'multiply' }} />
+            <img src={logoText} alt="behringer" style={{ height: 22, mixBlendMode: 'multiply' }} />
           </div>
 
           {/* ── Main panel ─────────────────────────────────────────────── */}
-          <div style={{ background: '#1c1c1c', padding: '14px 18px 10px' }}>
+          <div style={{ background: '#1c1c1c', padding: '22px 18px 18px' }}>
 
             {/* ═══ UPPER SECTION ══════════════════════════════════════════ */}
-            <div style={{ display: 'flex', gap: 18, marginBottom: 14, alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', gap: 18, marginBottom: 24, alignItems: 'flex-start' }}>
 
               {/* ── LEFT BLOCK ───────────────────────────────────────── */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: 186, flexShrink: 0 }}>
 
                 {/* MIX PRESET + CHANNELS — non-functional visual */}
-                <div style={{ opacity: 0.2, pointerEvents: 'none', display: 'flex', gap: 6 }}>
+                <div style={{ opacity: 0.2, pointerEvents: 'none', display: 'flex', gap: 6, marginBottom: 12 }}>
                   <div style={{ flex: 1 }}>
                     <HQSectionLabel label="MIX PRESET" />
                     <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
@@ -258,7 +258,7 @@ export default function MixerBoardHQ({
               <div style={{ width: 2, background: '#606060', alignSelf: 'stretch', flexShrink: 0, borderRadius: 1 }} />
 
               {/* ── CENTER BLOCK — 6 shared knobs ──────────────────── */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, ...hqZoneHL('center', highlightZone) }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 38, ...hqZoneHL('center', highlightZone) }}>
 
                 {/* Top row: TREBLE, MID, PANORAMA — symmetric 3 knobs */}
                 <div style={{
@@ -308,7 +308,7 @@ export default function MixerBoardHQ({
 
               {/* ── RIGHT BLOCK — OUTPUT + LIMITER ─────────────────── */}
               <div style={{
-                display: 'flex', flexDirection: 'column', gap: 6,
+                display: 'flex', flexDirection: 'column', gap: 10,
                 width: 186, flexShrink: 0, alignItems: 'center',
                 ...hqZoneHL('col3', highlightZone),
               }}>
@@ -328,7 +328,7 @@ export default function MixerBoardHQ({
             {/* ═══ CHANNEL BUTTONS ROW ════════════════════════════════════ */}
             <div style={hqZoneHL('channels', highlightZone)}>
               <HQSectionLabel label="Channel Select" />
-              <div style={{ display: 'flex', gap: 3, marginTop: 6, minWidth: 958 }}>
+              <div style={{ display: 'flex', gap: 3, marginTop: 8, minWidth: 958 }}>
                 {state.channels.map((ch) => (
                   <HQChannelBtn
                     key={ch.id}
@@ -347,7 +347,7 @@ export default function MixerBoardHQ({
             background: 'linear-gradient(0deg, #6a6a6a 0%, #5a5a5a 100%)',
             borderTop: '2px solid #111',
             borderRadius: '0 0 12px 12px',
-            height: 12,
+            height: 20,
           }} />
         </div>
       </div>
@@ -594,7 +594,7 @@ function HQChannelBtn({ ch, isActive, sourceKey, onSelect }) {
       <button
         type="button" onClick={onSelect}
         style={{
-          width: '100%', height: 28,
+          width: '100%', height: 36,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: btnBg,
           border: `1px solid ${btnBorder}`,
