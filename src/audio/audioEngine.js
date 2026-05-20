@@ -168,6 +168,19 @@ export async function loadSong(manifest, onProgress, signal) {
     onProgress?.(done, total)
   }))
 
+  // Safety net for loop sync: MP3s decoded with mismatched lengths (e.g. missing
+  // LAME gapless headers) would drift out of sync on every loop. Trim all buffers
+  // to the shortest one — any extra trailing samples are silence/encoder padding.
+  const minLength = Math.min(...Object.values(buffers).map(b => b.length))
+  for (const [key, buf] of Object.entries(buffers)) {
+    if (buf.length === minLength) continue
+    const trimmed = ctx.createBuffer(buf.numberOfChannels, minLength, buf.sampleRate)
+    for (let c = 0; c < buf.numberOfChannels; c++) {
+      trimmed.copyToChannel(buf.getChannelData(c).subarray(0, minLength), c)
+    }
+    buffers[key] = trimmed
+  }
+
   const pendingSources = []
 
   for (const [trackKey, buffer] of Object.entries(buffers)) {
