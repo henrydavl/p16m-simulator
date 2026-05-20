@@ -332,12 +332,12 @@ export default function MixerBoard({
               <span style={{ color: '#111', fontSize: 18, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
                 POWERPLAY
               </span>
-              <span style={{ color: '#111', fontSize: 34, fontWeight: 100, fontFamily: 'sans-serif', lineHeight: 1 }}>
+              <span style={{ color: '#111', fontSize: 27, fontWeight: 100, fontFamily: 'serif', lineHeight: 1, fontStyle: 'italic' }}>
                 16
               </span>
             </div>
-            <div style={{ color: '#444', fontSize: 7.5, letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'sans-serif', marginTop: 3, fontWeight: 600 }}>
-              16-Channel Digital Personal Mixer&nbsp;&nbsp;P16-M
+            <div style={{ color: '#444', fontSize: 8, letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'sans-serif', marginTop: 3, fontWeight: 600 }}>
+              16-Channel Digital Personal Mixer&nbsp;<b>P16-M</b>
             </div>
           </div>
         </div>
