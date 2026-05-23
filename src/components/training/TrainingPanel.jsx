@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { MODULES } from '../../data/trainingModules'
+import { MODULES_EN, MODULES_BY_LANG, UI } from '../../data/trainingModules'
 
 const STORAGE_KEY = 'p16_training'
+const LANG_KEY = 'p16_lang'
 
 function loadState() {
   try {
@@ -16,7 +17,8 @@ function saveState(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
 }
 
-const totalMilestones = MODULES.reduce((n, m) => n + m.milestones.length, 0)
+// Structure is identical across languages, so the count is language-independent.
+const totalMilestones = MODULES_EN.reduce((n, m) => n + m.milestones.length, 0)
 
 // ─── Certificate canvas ───────────────────────────────────────────────────────
 
@@ -150,7 +152,19 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
   const [nameInput, setNameInput] = useState('')
   const [quizAnswers, setQuizAnswers] = useState({})
   const [quizSubmitted, setQuizSubmitted] = useState(false)
+  const [lang, setLang] = useState(() => (localStorage.getItem(LANG_KEY) === 'id' ? 'id' : 'en'))
   const canvasRef = useRef(null)
+
+  // Language-driven content. Progress keys (`${mId}_${msId}`) are language-independent,
+  // so switching language never resets progress. Mixer labels stay English by design.
+  const MODULES = MODULES_BY_LANG[lang]
+  const t = UI[lang]
+
+  function switchLang(next) {
+    if (next === lang) return
+    setLang(next)
+    localStorage.setItem(LANG_KEY, next)
+  }
 
   const { progress, userName } = stored
   const dark = theme === 'dark'
@@ -237,7 +251,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
   }
 
   function handleReset() {
-    if (!window.confirm('Reset all training progress? This cannot be undone.')) return
+    if (!window.confirm(t.resetConfirm)) return
     persist({ progress: {}, userName: null })
     setView('modules')
     onHighlight?.(null)
@@ -256,14 +270,14 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
     e.preventDefault()
     const name = nameInput.trim()
     if (!name) return
-    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
+    const dateStr = new Date().toLocaleDateString(t.dateLocale, { day: '2-digit', month: 'long', year: 'numeric' })
     persist({ ...stored, userName: name, certDate: dateStr })
     setView('certificate')
   }
 
   useEffect(() => {
     if (view !== 'certificate' || !canvasRef.current) return
-    const dateStr = stored.certDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
+    const dateStr = stored.certDate || new Date().toLocaleDateString(t.dateLocale, { day: '2-digit', month: 'long', year: 'numeric' })
     drawCertificate(canvasRef.current, stored.userName || nameInput, dateStr)
   }, [view, stored.userName, stored.certDate])
 
@@ -282,7 +296,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
         {/* Progress bar */}
         <div style={{ padding: '10px 16px 10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-            <span style={{ color: T.text4, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.15em' }}>PROGRESS</span>
+            <span style={{ color: T.text4, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.15em' }}>{t.progress}</span>
             <span style={{ color: T.text3, fontSize: 11, fontFamily: 'monospace' }}>{completedCount} / {totalMilestones}</span>
           </div>
           <div style={{ height: 3, background: T.progressBg, borderRadius: 2 }}>
@@ -293,8 +307,8 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
         {/* PDF download */}
         <div style={{ padding: '0 16px 12px' }}>
           <a
-            href="/P16M_Training_Guide.pdf"
-            download="P16M_Training_Guide.pdf"
+            href={t.pdfFile}
+            download={t.pdfDownloadName}
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
               color: T.pdfText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em',
@@ -303,7 +317,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
             }}
           >
             <span>↓</span>
-            <span>TRAINING GUIDE PDF</span>
+            <span>{t.pdfButton}</span>
           </a>
         </div>
 
@@ -323,7 +337,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
               >
                 <span style={{ width: 14, color: T.text5, fontSize: 11, flexShrink: 0 }}>{expanded ? '▾' : '▸'}</span>
                 <span style={{ flex: 1, color: modDone ? '#c07018' : T.text2, fontSize: 13, fontFamily: 'monospace', letterSpacing: '0.08em' }}>
-                  MODULE {mod.id}
+                  {t.moduleLabel} {mod.id}
                 </span>
                 {modDone && <span style={{ color: '#c07018', fontSize: 11 }}>✓</span>}
               </button>
@@ -370,7 +384,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
         {allDone && (
           <div style={{ margin: '16px 16px 8px', padding: '12px', background: T.certCtaBg, border: `1px solid ${T.certCtaBorder}`, borderRadius: 4 }}>
             <div style={{ color: '#c07018', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em', marginBottom: 6 }}>
-              🎉 TRAINING COMPLETE
+              {t.trainingComplete}
             </div>
             <button
               onClick={handleClaimCert}
@@ -380,7 +394,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                 letterSpacing: '0.12em', cursor: 'pointer', fontWeight: 700,
               }}
             >
-              CLAIM CERTIFICATE
+              {t.claimCert}
             </button>
           </div>
         )}
@@ -396,7 +410,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                 letterSpacing: '0.12em', cursor: 'pointer',
               }}
             >
-              ↺ RESET ALL PROGRESS
+              {t.resetProgress}
             </button>
           </div>
         )}
@@ -433,12 +447,12 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
           onClick={goBack}
           style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer', color: T.backText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em' }}
         >
-          ← BACK
+          {t.back}
         </button>
 
         <div style={{ padding: '0 16px 20px', flex: 1 }}>
           <div style={{ color: T.text6, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 6 }}>
-            MODULE {mod.id} — MILESTONE {ms.id}
+            {t.moduleLabel} {mod.id} — {t.milestoneLabel} {ms.id}
           </div>
 
           <div style={{ color: T.text1, fontSize: 16, fontFamily: 'monospace', letterSpacing: '0.06em', marginBottom: 14, fontWeight: 600 }}>
@@ -522,7 +536,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                         borderRadius: 3,
                       }}>
                         <span style={{ color: isCorrect ? '#22c55e' : '#ef4444', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginRight: 6 }}>
-                          {isCorrect ? '✓ CORRECT' : '✗ INCORRECT'}
+                          {isCorrect ? t.correct : t.incorrect}
                         </span>
                         <span style={{ color: T.text4, fontSize: 12, fontFamily: 'sans-serif', lineHeight: 1.5 }}>
                           {q.explanation}
@@ -546,14 +560,14 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                     cursor: allAnswered ? 'pointer' : 'default',
                   }}
                 >
-                  CHECK ANSWERS
+                  {t.checkAnswers}
                 </button>
               )}
 
               {!done && quizSubmitted && !allCorrect && (
                 <div>
                   <div style={{ textAlign: 'center', color: '#ef4444', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 10 }}>
-                    {ms.quiz.filter((q, i) => quizAnswers[i] === q.correct).length} / {ms.quiz.length} correct — review the explanations above
+                    {t.reviewMsg(ms.quiz.filter((q, i) => quizAnswers[i] === q.correct).length, ms.quiz.length)}
                   </div>
                   <button
                     onClick={() => setQuizSubmitted(false)}
@@ -563,7 +577,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                       fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
                     }}
                   >
-                    TRY AGAIN
+                    {t.tryAgain}
                   </button>
                 </div>
               )}
@@ -571,7 +585,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
               {!done && quizSubmitted && allCorrect && (
                 <div>
                   <div style={{ textAlign: 'center', color: '#22c55e', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginBottom: 10 }}>
-                    {ms.quiz.length} / {ms.quiz.length} correct — well done!
+                    {t.wellDone(ms.quiz.length, ms.quiz.length)}
                   </div>
                   <button
                     onClick={handleCompleteAndAdvance}
@@ -581,20 +595,20 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                       fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
                     }}
                   >
-                    ✓ MARK AS COMPLETE
+                    {t.markComplete}
                   </button>
                 </div>
               )}
 
               {done && (
                 <div style={{ textAlign: 'center', color: T.completedText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em', padding: '10px 0' }}>
-                  ✓ COMPLETED
+                  {t.completed}
                   {next && (
                     <button
                       onClick={() => openMilestone(next.mId, next.msId)}
                       style={{ display: 'block', width: '100%', marginTop: 8, padding: '8px 0', background: 'none', border: `1px solid ${T.nextBorder}`, borderRadius: 3, color: T.nextText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', cursor: 'pointer' }}
                     >
-                      NEXT: {next.title} →
+                      {t.next}: {next.title} →
                     </button>
                   )}
                 </div>
@@ -618,17 +632,17 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
                     fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.14em', cursor: 'pointer',
                   }}
                 >
-                  ✓ MARK AS COMPLETE
+                  {t.markComplete}
                 </button>
               ) : (
                 <div style={{ textAlign: 'center', color: T.completedText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em', padding: '10px 0' }}>
-                  ✓ COMPLETED
+                  {t.completed}
                   {next && (
                     <button
                       onClick={() => openMilestone(next.mId, next.msId)}
                       style={{ display: 'block', width: '100%', marginTop: 8, padding: '8px 0', background: 'none', border: `1px solid ${T.nextBorder}`, borderRadius: 3, color: T.nextText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', cursor: 'pointer' }}
                     >
-                      NEXT: {next.title} →
+                      {t.next}: {next.title} →
                     </button>
                   )}
                 </div>
@@ -644,17 +658,17 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 20px' }}>
         <div style={{ color: '#c07018', fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.15em', marginBottom: 20, textAlign: 'center' }}>
-          🎉 TRAINING COMPLETE
+          {t.trainingComplete}
         </div>
         <div style={{ color: T.text7, fontSize: 13, fontFamily: 'monospace', lineHeight: 1.6, marginBottom: 24, textAlign: 'center' }}>
-          Enter your name as it should appear on your certificate.
+          {t.certPromptMsg}
         </div>
         <form onSubmit={handleSubmitName}>
           <input
             autoFocus
             value={nameInput}
             onChange={e => setNameInput(e.target.value)}
-            placeholder="Your full name"
+            placeholder={t.namePlaceholder}
             style={{
               width: '100%', boxSizing: 'border-box', padding: '10px 12px',
               background: T.inputBg, border: `1px solid ${T.inputBorder}`, borderRadius: 3,
@@ -673,7 +687,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
               transition: 'background 150ms',
             }}
           >
-            GENERATE CERTIFICATE
+            {t.generateCert}
           </button>
         </form>
       </div>
@@ -687,7 +701,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
           onClick={() => setView('modules')}
           style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, background: 'none', border: 'none', cursor: 'pointer', color: T.backText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.12em' }}
         >
-          ← BACK
+          {t.back}
         </button>
         <canvas
           ref={canvasRef}
@@ -702,11 +716,11 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
             letterSpacing: '0.14em', cursor: 'pointer', fontWeight: 700,
           }}
         >
-          ↓ DOWNLOAD CERTIFICATE
+          {t.downloadCert}
         </button>
         <a
-          href="/P16M_Training_Guide.pdf"
-          download="P16M_Training_Guide.pdf"
+          href={t.pdfFile}
+          download={t.pdfDownloadName}
           style={{
             display: 'block', width: '100%', marginTop: 8, padding: '10px 0', boxSizing: 'border-box',
             background: T.pdfBg, border: `1px solid ${T.pdfBorder}`, borderRadius: 3,
@@ -714,7 +728,7 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
             letterSpacing: '0.14em', textAlign: 'center', textDecoration: 'none',
           }}
         >
-          ↓ DOWNLOAD TRAINING GUIDE PDF
+          {t.downloadPdf}
         </a>
       </div>
     )
@@ -756,20 +770,42 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
         }}
       >
         {/* Header */}
-        <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${T.headerBorder}`, flexShrink: 0 }}>
-          <div style={{ color: '#c07018', fontSize: 13, fontFamily: 'monospace', letterSpacing: '0.2em', fontWeight: 700 }}>
-            P16 TRAINING
+        <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${T.headerBorder}`, flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+          <div>
+            <div style={{ color: '#c07018', fontSize: 13, fontFamily: 'monospace', letterSpacing: '0.2em', fontWeight: 700 }}>
+              P16 TRAINING
+            </div>
+            <div style={{ color: T.subtitleText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginTop: 3 }}>
+              {t.subtitle}
+            </div>
           </div>
-          <div style={{ color: T.subtitleText, fontSize: 11, fontFamily: 'monospace', letterSpacing: '0.1em', marginTop: 3 }}>
-            SELF-LEARNING MODULE
+          {/* Language toggle — affects training content only; mixer stays English */}
+          <div style={{ display: 'flex', flexShrink: 0, border: `1px solid ${T.toggleBorder}`, borderRadius: 3, overflow: 'hidden' }}>
+            {['en', 'id'].map(l => {
+              const active = lang === l
+              return (
+                <button
+                  key={l}
+                  onClick={() => switchLang(l)}
+                  style={{
+                    padding: '3px 8px', background: active ? '#c07018' : 'transparent',
+                    color: active ? '#000' : T.toggleText, border: 'none', cursor: 'pointer',
+                    fontSize: 10, fontFamily: 'monospace', letterSpacing: '0.1em',
+                    fontWeight: active ? 700 : 400,
+                  }}
+                >
+                  {l.toUpperCase()}
+                </button>
+              )
+            })}
           </div>
         </div>
 
         {/* Nav tabs */}
         <div style={{ display: 'flex', borderBottom: `1px solid ${T.headerBorder}`, flexShrink: 0 }}>
           {[
-            { id: 'modules', label: 'MODULES' },
-            { id: 'certificate', label: 'CERTIFICATE' },
+            { id: 'modules', label: t.tabModules },
+            { id: 'certificate', label: t.tabCertificate },
           ].map(tab => {
             const certActive = view === 'cert-prompt' || view === 'certificate'
             const isActive = tab.id === 'modules' ? !certActive : certActive
