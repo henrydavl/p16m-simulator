@@ -41,19 +41,19 @@ function buildMasterChain() {
   masterBass = ctx.createBiquadFilter()
   masterBass.type = 'lowshelf'
   masterBass.frequency.value = 200
-  masterBass.Q.value = 0.7071
+  masterBass.Q.value = 0.5
   masterBass.gain.value = 0
 
   masterMid = ctx.createBiquadFilter()
   masterMid.type = 'peaking'
   masterMid.frequency.value = 1265
-  masterMid.Q.value = 0.8
+  masterMid.Q.value = 0.5
   masterMid.gain.value = 0
 
   masterTreble = ctx.createBiquadFilter()
   masterTreble.type = 'highshelf'
   masterTreble.frequency.value = 4000
-  masterTreble.Q.value = 0.7071
+  masterTreble.Q.value = 0.5
   masterTreble.gain.value = 0
 
   masterPanner = ctx.createStereoPanner()
@@ -92,19 +92,19 @@ function buildChannelChain(id) {
   const bassFilter = ctx.createBiquadFilter()
   bassFilter.type = 'lowshelf'
   bassFilter.frequency.value = 200
-  bassFilter.Q.value = 0.7071
+  bassFilter.Q.value = 0.5
   bassFilter.gain.value = 0
 
   const midFilter = ctx.createBiquadFilter()
   midFilter.type = 'peaking'
   midFilter.frequency.value = 1265
-  midFilter.Q.value = 0.8
+  midFilter.Q.value = 0.5
   midFilter.gain.value = 0
 
   const trebleFilter = ctx.createBiquadFilter()
   trebleFilter.type = 'highshelf'
   trebleFilter.frequency.value = 4000
-  trebleFilter.Q.value = 0.7071
+  trebleFilter.Q.value = 0.5
   trebleFilter.gain.value = 0
 
   const pannerNode = ctx.createStereoPanner()
@@ -299,10 +299,16 @@ export function setMasterPan(value) {
 
 export function setLimiterThreshold(value) {
   if (!limiter || !postLimiterGain || !ctx) return
-  const threshold_dB = -(100 - value) * 0.2
+  // Loudness-maximizer style:
+  // Knob right (100) = threshold -20 dB + ~+19 dB makeup → LOUD, squashed
+  // Knob left  (0)   = threshold   0 dB + 0 dB makeup    → bypassed, clean at original level
+  // Turning right engages the limiter (more drive, makeup pushes loudness up);
+  // turning left bypasses it (no compression, no boost).
+  const threshold_dB = -value * 0.2
   limiter.threshold.setTargetAtTime(threshold_dB, ctx.currentTime, 0.015)
-  const compensation = Math.pow(10, threshold_dB * (1 - 1 / limiter.ratio.value) / 20)
-  postLimiterGain.gain.setTargetAtTime(compensation, ctx.currentTime, 0.015)
+  const makeup_dB = -threshold_dB * (1 - 1 / limiter.ratio.value)
+  const makeupGain = Math.pow(10, makeup_dB / 20)
+  postLimiterGain.gain.setTargetAtTime(makeupGain, ctx.currentTime, 0.015)
 }
 
 export function setOutputLevel(value) {

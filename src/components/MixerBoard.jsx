@@ -441,22 +441,33 @@ export default function MixerBoard({
               {/* EQUALIZER */}
               <div style={zoneHL('eq', highlightZone)}>
                 <SectionLabel label="EQUALIZER" />
-                <div style={{ display: 'flex', gap: 20, marginTop: 8, justifyContent: 'space-around' }}>
-                  {[
-                    ['BASS',   displayEq.bass,   { bass:   null }],
-                    ['MID',    displayEq.mid,    { mid:    null }],
-                    ['FREQ',   displayEq.freq,   { freq:   null }],
-                    ['TREBLE', displayEq.treble, { treble: null }],
-                  ].map(([lbl, val, key]) => (
-                    <Knob
-                      key={lbl} value={val} min={0} max={100} label={lbl} size={46}
-                      onChange={(v) => {
-                        const val = Math.round(v)
-                        if (selectedCh) d({ type: 'UPDATE_SELECTED_EQ', updates: { [lbl.toLowerCase()]: val } })
-                        else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { [lbl.toLowerCase()]: val } })
-                      }}
-                    />
-                  ))}
+                <div style={{ position: 'relative', display: 'flex', gap: 20, marginTop: 8, justifyContent: 'space-around' }}>
+                  {['BASS', 'MID', 'FREQ', 'TREBLE'].map((lbl) => {
+                    const field = lbl.toLowerCase()
+                    return (
+                      <Knob
+                        key={lbl} value={displayEq[field]} min={0} max={100} label={lbl} size={46}
+                        onChange={(v) => {
+                          const val = Math.round(v)
+                          if (selectedCh) d({ type: 'UPDATE_SELECTED_EQ', updates: { [field]: val } })
+                          else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { [field]: val } })
+                        }}
+                        onClick={() => {
+                          if (selectedCh) d({ type: 'UPDATE_SELECTED_EQ', updates: { [field]: 50 } })
+                          else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { [field]: 50 } })
+                        }}
+                      />
+                    )
+                  })}
+                  {/* MID↔FREQ link: FREQ only sweeps the MID band's centre frequency */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 22, left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 60, height: 2,
+                    background: '#666', borderRadius: 1,
+                    pointerEvents: 'none',
+                  }} />
                 </div>
               </div>
 

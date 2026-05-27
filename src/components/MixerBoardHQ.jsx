@@ -61,6 +61,11 @@ export default function MixerBoardHQ({
     if (selectedCh) d({ type: 'UPDATE_SELECTED_EQ', updates: { [field]: val } })
     else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { [field]: val } })
   }
+  // Click resets BASS/MID/TREBLE to 50 (0 dB), matching the PAN/VOLUME click-to-default pattern.
+  const eqReset = (field) => () => {
+    if (selectedCh) d({ type: 'UPDATE_SELECTED_EQ', updates: { [field]: 50 } })
+    else if (state.master.selected) d({ type: 'UPDATE_MASTER', updates: { [field]: 50 } })
+  }
 
   return (
     <div
@@ -259,6 +264,15 @@ export default function MixerBoardHQ({
 
               {/* ── CENTER BLOCK — 6 shared knobs ──────────────────── */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 38, ...hqZoneHL('center', highlightZone) }}>
+                {/* MID↔FREQ link: FREQ only sweeps the MID band's centre frequency */}
+                <div style={{
+                  position: 'absolute',
+                  top: '50%', left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 2, height: 28,
+                  background: '#3a3a3a', borderRadius: 1,
+                  pointerEvents: 'none', zIndex: 1,
+                }} />
 
                 {/* Top row: TREBLE, MID, PANORAMA — symmetric 3 knobs */}
                 <div style={{
@@ -267,8 +281,8 @@ export default function MixerBoardHQ({
                   pointerEvents: hasSelection ? 'auto' : 'none',
                   transition: 'opacity 150ms',
                 }}>
-                  <HQKnob value={displayEq.treble} min={0} max={100} label="TREBLE" size={50} isBipolar onChange={eqChange('treble')} />
-                  <HQKnob value={displayEq.mid}    min={0} max={100} label="MID"    size={50} isBipolar onChange={eqChange('mid')} />
+                  <HQKnob value={displayEq.treble} min={0} max={100} label="TREBLE" size={50} isBipolar onChange={eqChange('treble')} onClick={eqReset('treble')} />
+                  <HQKnob value={displayEq.mid}    min={0} max={100} label="MID"    size={50} isBipolar onChange={eqChange('mid')}    onClick={eqReset('mid')} />
                   <HQKnob
                     value={displayPan} min={-50} max={50} label="PANORAMA" size={50} isPan
                     onChange={(v) => {
@@ -287,10 +301,10 @@ export default function MixerBoardHQ({
                 {/* BASS + FREQ dim when nothing selected; VOLUME always active */}
                 <div style={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center' }}>
                   <div style={{ opacity: hasSelection ? 1 : 0.35, pointerEvents: hasSelection ? 'auto' : 'none', transition: 'opacity 150ms' }}>
-                    <HQKnob value={displayEq.bass} min={0} max={100} label="BASS" size={50} isBipolar onChange={eqChange('bass')} />
+                    <HQKnob value={displayEq.bass} min={0} max={100} label="BASS" size={50} isBipolar onChange={eqChange('bass')} onClick={eqReset('bass')} />
                   </div>
                   <div style={{ opacity: hasSelection ? 1 : 0.35, pointerEvents: hasSelection ? 'auto' : 'none', transition: 'opacity 150ms' }}>
-                    <HQKnob value={displayEq.freq} min={0} max={100} label="FREQ" size={50} noRing onChange={eqChange('freq')} />
+                    <HQKnob value={displayEq.freq} min={0} max={100} label="FREQ" size={50} noRing onChange={eqChange('freq')} onClick={eqReset('freq')} />
                   </div>
                   <HQKnob
                     value={activeVolume} min={0} max={100} label="VOLUME" size={50}

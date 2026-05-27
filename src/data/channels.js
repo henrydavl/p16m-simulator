@@ -18,7 +18,7 @@ export const CHANNELS = [
 ]
 
 export const INITIAL_CHANNEL_STATE = {
-  volume: 75,
+  volume: 0,
   pan: 0,
   mute: false,
   solo: false,
@@ -30,9 +30,9 @@ export const INITIAL_CHANNEL_STATE = {
 }
 
 export const INITIAL_MASTER_STATE = {
-  volume: 75,
-  limiter: 100,
-  outputLevel: 75,
+  volume: 0,
+  limiter: 0,
+  outputLevel: 0,
   selected: false,
   bass: 50,
   mid: 50,
