@@ -16,6 +16,7 @@ let masterBass = null
 let masterMid = null
 let masterTreble = null
 let masterPanner = null
+let preLimiterGain = null
 let limiter = null
 let postLimiterGain = null
 let outputGain = null
@@ -64,14 +65,22 @@ function buildMasterChain() {
   masterMid.connect(masterTreble)
   masterTreble.connect(masterPanner)
 
-  // Brick-wall limiter: high ratio, fast attack, no knee.
-  // threshold=0dB (knob=100) → transparent; postLimiterGain cancels automatic makeup gain.
+  // LIMITER knob = a "drive into a fixed limiter" control (see setLimiterThreshold).
+  // The compressor's THRESHOLD stays fixed. WebAudio's DynamicsCompressor applies its
+  // own internal, threshold-dependent makeup gain we can't read; sweeping the threshold
+  // therefore moved that hidden makeup around and produced a loudness *hump* in the
+  // middle of the knob travel. Keeping the threshold fixed makes that hidden makeup a
+  // constant, so the knob's loudness curve is monotonic and fully under our control via
+  // preLimiterGain (drive) and postLimiterGain (the exact inverse).
+  preLimiterGain = ctx.createGain()
+  preLimiterGain.gain.value = 1.0
+
   limiter = ctx.createDynamicsCompressor()
-  limiter.threshold.value = 0
+  limiter.threshold.value = -2   // fixed; the knob drives signal INTO this, it doesn't move
   limiter.ratio.value = 20
-  limiter.attack.value = 0.003
-  limiter.release.value = 0.25
-  limiter.knee.value = 0
+  limiter.attack.value = 0.006
+  limiter.release.value = 0.28
+  limiter.knee.value = 6
 
   postLimiterGain = ctx.createGain()
   postLimiterGain.gain.value = 1.0
@@ -79,7 +88,8 @@ function buildMasterChain() {
   outputGain = ctx.createGain()
   outputGain.gain.value = 0.75
 
-  masterPanner.connect(limiter)
+  masterPanner.connect(preLimiterGain)
+  preLimiterGain.connect(limiter)
   limiter.connect(postLimiterGain)
   postLimiterGain.connect(outputGain)
   outputGain.connect(ctx.destination)
@@ -253,6 +263,7 @@ export async function stopAudio() {
   masterMid = null
   masterTreble = null
   masterPanner = null
+  preLimiterGain = null
   limiter = null
   postLimiterGain = null
   outputGain = null
@@ -297,18 +308,31 @@ export function setMasterPan(value) {
   masterPanner.pan.setTargetAtTime(value / 50, ctx.currentTime, 0.015)
 }
 
+const MAX_DRIVE_DB = 30   // drive at full-left; 0 dB at full-right
+
 export function setLimiterThreshold(value) {
-  if (!limiter || !postLimiterGain || !ctx) return
-  // Loudness-maximizer style:
-  // Knob right (100) = threshold -20 dB + ~+19 dB makeup → LOUD, squashed
-  // Knob left  (0)   = threshold   0 dB + 0 dB makeup    → bypassed, clean at original level
-  // Turning right engages the limiter (more drive, makeup pushes loudness up);
-  // turning left bypasses it (no compression, no boost).
-  const threshold_dB = -value * 0.2
-  limiter.threshold.setTargetAtTime(threshold_dB, ctx.currentTime, 0.015)
-  const makeup_dB = -threshold_dB * (1 - 1 / limiter.ratio.value)
-  const makeupGain = Math.pow(10, makeup_dB / 20)
-  postLimiterGain.gain.setTargetAtTime(makeupGain, ctx.currentTime, 0.015)
+  if (!preLimiterGain || !postLimiterGain || !ctx) return
+  // Limiter "amount" knob. value: 0 (full LEFT) .. 100 (full RIGHT). The threshold is
+  // FIXED (see buildMasterChain) — the knob instead controls how hard we DRIVE the
+  // signal into the limiter, and pulls the output back down by the exact same amount.
+  //
+  //   Full RIGHT (100) → drive 0 dB  → signal passes mostly under the threshold →
+  //                      clean, full dynamics, full level → LOUDEST & uncompressed.
+  //   Full LEFT  (0)   → drive +30 dB → signal slammed far over the threshold and
+  //                      crushed at 20:1, then attenuated -30 dB on the way out →
+  //                      dynamics flattened AND level drops → QUIETEST & heavily limited.
+  //
+  // Because the post-gain is the exact inverse of the drive, loudness only ever goes
+  // DOWN as you turn left, never up — guaranteed monotonic, no center hump, no clipping
+  // (the limiter clamps the driven signal before the attenuation, all in float).
+  const t = value / 100                          // 0 (left) .. 1 (right)
+  const drive_dB = MAX_DRIVE_DB * (1 - t)        // +30 dB at left → 0 dB at right
+  const preGain  = Math.pow(10,  drive_dB / 20)
+  const postGain = Math.pow(10, -drive_dB / 20)
+  preLimiterGain.gain.setTargetAtTime(preGain,  ctx.currentTime, 0.02)
+  postLimiterGain.gain.setTargetAtTime(postGain, ctx.currentTime, 0.02)
+  // TEMP DEBUG — remove after limiter is verified.
+  console.log(`[LIMITER] knob=${value}  drive=${drive_dB.toFixed(1)}dB  post=${(-drive_dB).toFixed(1)}dB  ${value >= 50 ? 'RIGHT→open/loud' : 'LEFT→driven/crushed/quiet'}`)
 }
 
 export function setOutputLevel(value) {
@@ -324,3 +348,9 @@ export function setChannelEQ(id, { bass, mid, freq, treble }) {
   ch.trebleFilter.gain.setTargetAtTime((treble - 50) / 50 * 12, ctx.currentTime, 0.015)
   ch.midFilter.frequency.setTargetAtTime(200 * Math.pow(40, freq / 100), ctx.currentTime, 0.015)
 }
+
+// This module owns a singleton AudioContext + audio graph that survives Vite's HMR.
+// Hot-swapping the code while the old graph keeps playing means edits (e.g. limiter
+// tuning) appear to do nothing. Decline HMR so any edit here forces a full page reload,
+// which tears down the old context and rebuilds the graph from the new code.
+if (import.meta.hot) import.meta.hot.decline()

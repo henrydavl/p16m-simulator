@@ -13,15 +13,44 @@ import KofiButton from './KofiButton'
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
-const initialState = {
-  channels: CHANNELS.map((ch) => ({
-    ...ch,
-    ...INITIAL_CHANNEL_STATE,
-    // Stereo L channels (odd ids 1,3,5) default hard-left; R channels (even 2,4,6) hard-right.
-    // Without this, both sides of the split sit at centre and collapse to mono.
-    pan: ch.type === 'stereo' ? (ch.id % 2 === 1 ? -50 : 50) : 0,
-  })),
-  master: { ...INITIAL_MASTER_STATE },
+// Mixer state is cached here so a page refresh keeps the user's faders/EQ/limiter
+// instead of resetting everything to the silent boot state. Cleared on training reset.
+const MIXER_KEY = 'p16_mixer'
+
+function buildInitialState() {
+  return {
+    channels: CHANNELS.map((ch) => ({
+      ...ch,
+      ...INITIAL_CHANNEL_STATE,
+      // Stereo L channels (odd ids 1,3,5) default hard-left; R channels (even 2,4,6) hard-right.
+      // Without this, both sides of the split sit at centre and collapse to mono.
+      pan: ch.type === 'stereo' ? (ch.id % 2 === 1 ? -50 : 50) : 0,
+    })),
+    master: { ...INITIAL_MASTER_STATE },
+  }
+}
+
+// First load (or after a training reset) → silent boot state (volumes 0). Otherwise
+// overlay the cached mixer values onto the current channel definitions, by index, so a
+// future change to CHANNELS can't be corrupted by a stale cache. Selection is never
+// restored (starts deselected).
+function initReducerState() {
+  const base = buildInitialState()
+  try {
+    const saved = JSON.parse(localStorage.getItem(MIXER_KEY))
+    if (!saved || !Array.isArray(saved.channels)) return base
+    return {
+      channels: base.channels.map((ch, i) => {
+        const s = saved.channels[i]
+        if (!s) return ch
+        const { volume, pan, mute, solo, bass, mid, freq, treble } = s
+        return { ...ch, volume, pan, mute, solo, bass, mid, freq, treble, selected: false }
+      }),
+      master: { ...base.master, ...(saved.master ?? {}), selected: false },
+    }
+  } catch {
+    return base
+  }
 }
 
 function reducer(state, action) {
@@ -145,7 +174,7 @@ export default function MixerBoard({
   activeChannelIds = new Set(),
   songError = null,
 }) {
-  const [state, dispatch] = useReducer(reducer, initialState)
+  const [state, dispatch] = useReducer(reducer, undefined, initReducerState)
   const [scale, setScale] = useState(1)
   const [isPortrait, setIsPortrait] = useState(false)
   const mixerRef = useRef(null)
@@ -225,6 +254,19 @@ export default function MixerBoard({
     setLimiterThreshold(state.master.limiter)
     setOutputLevel(state.master.outputLevel)
   }, [state, activeChannelIds])
+
+  // Cache mixer state so a refresh keeps the user's levels. Store only the mutable
+  // values (not channel definitions or selection) so the cache stays small and robust.
+  useEffect(() => {
+    try {
+      const compact = {
+        channels: state.channels.map(({ volume, pan, mute, solo, bass, mid, freq, treble }) =>
+          ({ volume, pan, mute, solo, bass, mid, freq, treble })),
+        master: state.master,
+      }
+      localStorage.setItem(MIXER_KEY, JSON.stringify(compact))
+    } catch {}
+  }, [state])
 
   if (skin === 'hq') {
     return (

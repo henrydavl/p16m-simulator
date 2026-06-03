@@ -253,8 +253,11 @@ export default function TrainingPanel({ open, onToggle, theme = 'dark', onHighli
   function handleReset() {
     if (!window.confirm(t.resetConfirm)) return
     persist({ progress: {}, userName: null })
-    setView('modules')
+    // Also clear the cached mixer state so the board returns to the silent boot
+    // state (all volumes 0); reload to re-initialise the reducer from the cleared cache.
+    localStorage.removeItem('p16_mixer')
     onHighlight?.(null)
+    window.location.reload()
   }
 
   function handleClaimCert() {

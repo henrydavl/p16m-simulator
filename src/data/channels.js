@@ -31,7 +31,7 @@ export const INITIAL_CHANNEL_STATE = {
 
 export const INITIAL_MASTER_STATE = {
   volume: 0,
-  limiter: 0,
+  limiter: 100, // far RIGHT = limiter off / transparent — clean starting point
   outputLevel: 0,
   selected: false,
   bass: 50,
