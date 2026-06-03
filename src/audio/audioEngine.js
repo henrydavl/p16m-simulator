@@ -76,11 +76,11 @@ function buildMasterChain() {
   preLimiterGain.gain.value = 1.0
 
   limiter = ctx.createDynamicsCompressor()
-  limiter.threshold.value = -2   // fixed; the knob drives signal INTO this, it doesn't move
-  limiter.ratio.value = 20
-  limiter.attack.value = 0.006
-  limiter.release.value = 0.28
-  limiter.knee.value = 6
+  limiter.threshold.value = -2     // fixed; the knob drives signal INTO this, it doesn't move
+  limiter.ratio.value = 20         // WebAudio caps ratio at 20:1 (requested 100:1/∞ clamps here) → brick-wall
+  limiter.attack.value = 0.006     // 6 ms
+  limiter.release.value = 0.05     // 50 ms — fast release
+  limiter.knee.value = 3           // near-hard knee (0 = fully hard)
 
   postLimiterGain = ctx.createGain()
   postLimiterGain.gain.value = 1.0
